@@ -195,6 +195,54 @@
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
     }
+
+    /* ── FULL-PAGE INFINITE GRID BACKGROUND ───────── */
+    #page-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .page-grid-base,
+    .page-grid-reveal {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%236B7A90' stroke-width='1'/%3E%3C/svg%3E");
+      background-size: 40px 40px;
+      animation: gridScrollDiag 1.333s linear infinite;
+    }
+    .page-grid-base { opacity: 0.05; }
+    .page-grid-reveal {
+      opacity: 0.4;
+      -webkit-mask-image: radial-gradient(300px circle at -9999px -9999px, black, transparent);
+      mask-image:         radial-gradient(300px circle at -9999px -9999px, black, transparent);
+    }
+    @keyframes gridScrollDiag {
+      from { background-position: 0px 0px; }
+      to   { background-position: 40px 40px; }
+    }
+
+    .page-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+    .page-blob-orange {
+      width: 40%;
+      height: 40%;
+      background: rgba(249, 115, 22, 0.35);
+      top: -10%;
+      right: -10%;
+    }
+    .page-blob-blue {
+      width: 40%;
+      height: 40%;
+      background: rgba(59, 130, 246, 0.28);
+      bottom: -10%;
+      left: -5%;
+    }
     .greeting-avatar {
       width: 52px; height: 52px;
       border-radius: 50%;
@@ -856,9 +904,390 @@
       .page { padding: 16px; gap: 14px; }
       .topbar { padding: 0 16px; }
     }
+
+    /* ── AUDIO LIBRARY PAGE ──────────────────────── */
+    .library-page {
+      display: none;
+      flex: 1;
+      padding: 32px;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 920px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .library-page.show { display: flex; }
+
+    .lib-topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .lib-title { font-size: 22px; font-weight: 800; color: var(--text); }
+    .lib-subtitle { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    .lib-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .lib-stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      box-shadow: var(--shadow);
+    }
+    .lib-stat-val { font-size: 26px; font-weight: 800; color: var(--text); }
+    .lib-stat-lbl { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .lib-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .lib-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .lib-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+    .lib-card.playing { border-color: rgba(74,143,212,.45); }
+
+    .lib-card-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+    }
+    .lib-card-icon {
+      width: 44px; height: 44px;
+      background: var(--blue-bg);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .lib-card-icon svg { width: 22px; height: 22px; color: var(--blue); }
+
+    .lib-card-info { flex: 1; min-width: 0; }
+    .lib-card-name {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 5px;
+    }
+    .lib-card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .lib-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px;
+      background: rgba(74,143,212,.08);
+      color: var(--blue);
+      border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+    }
+    .lib-card-date { font-size: 11px; color: var(--muted-2); margin-top: 4px; }
+
+    .lib-card-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    .lib-playing-ind {
+      display: none;
+      align-items: center;
+      gap: 3px;
+    }
+    .lib-card.playing .lib-playing-ind { display: flex; }
+    .lib-play-bar {
+      width: 3px;
+      background: var(--blue);
+      border-radius: 2px;
+      animation: playBar .8s ease-in-out infinite;
+    }
+    .lib-play-bar:nth-child(1) { height: 8px;  animation-delay: 0s; }
+    .lib-play-bar:nth-child(2) { height: 14px; animation-delay: .15s; }
+    .lib-play-bar:nth-child(3) { height: 10px; animation-delay: .3s; }
+
+    .lib-listen-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      border: none; cursor: pointer;
+      transition: all .15s;
+    }
+    .lib-listen-btn.idle {
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(74,143,212,.3);
+    }
+    .lib-listen-btn.idle:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(74,143,212,.4); }
+    .lib-listen-btn.stop {
+      background: rgba(239,68,68,.1);
+      color: var(--red);
+    }
+    .lib-listen-btn.stop:hover { background: rgba(239,68,68,.18); }
+    .lib-listen-btn svg { width: 12px; height: 12px; }
+
+    .lib-card-excerpt {
+      margin: 0 20px 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .lib-empty {
+      text-align: center;
+      padding: 80px 24px;
+      background: var(--white);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .lib-empty-icon {
+      width: 64px; height: 64px;
+      background: var(--blue-bg);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .lib-empty-icon svg { width: 32px; height: 32px; color: var(--blue); }
+    .lib-empty h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .lib-empty p { font-size: 13px; color: var(--muted); }
+
+    @media (max-width: 600px) {
+      .lib-stats { grid-template-columns: 1fr; }
+      .library-page { padding: 16px; }
+    }
+
+    /* ── DYNAMIC ISLAND TOC ───────────────────────── */
+    #toc-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                  visibility 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #toc-backdrop.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #toc-wrapper {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translate(-50%, 60px);
+      opacity: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #toc-wrapper.mounted {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+
+    #toc-island {
+      background: var(--white);
+      border: 1px solid rgba(28, 41, 64, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      color: var(--text);
+      overflow: hidden;
+      cursor: pointer;
+      width: 280px;
+      height: 52px;
+      border-radius: 26px;
+      transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                  height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                  border-radius 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+    }
+    #toc-island.expanded {
+      width: 340px;
+      height: 400px;
+      border-radius: 24px;
+      cursor: default;
+    }
+
+    #toc-pill {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 16px 0 20px;
+      transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                  filter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #toc-island.expanded #toc-pill {
+      opacity: 0;
+      transform: scale(0.95);
+      filter: blur(4px);
+      pointer-events: none;
+    }
+
+    .toc-pill-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--text);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    #toc-title-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      height: 20px;
+    }
+    #toc-title {
+      position: absolute;
+      inset: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    #toc-progress-svg {
+      transform: rotate(-90deg);
+      flex-shrink: 0;
+    }
+
+    #toc-expanded {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: scale(1.05);
+      transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+    #toc-island.expanded #toc-expanded {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+      transition-delay: 0.12s;
+    }
+
+    .toc-exp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 12px;
+      flex-shrink: 0;
+    }
+    .toc-exp-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    #toc-close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    #toc-close-btn:hover { color: var(--text); }
+    #toc-close-btn svg { width: 20px; height: 20px; }
+
+    #toc-list {
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease;
+      color: rgba(28, 41, 64, 0.45);
+      padding: 8px 12px;
+    }
+    .toc-item:hover {
+      background: rgba(28, 41, 64, 0.05);
+      color: rgba(28, 41, 64, 0.85);
+    }
+    .toc-item.active {
+      background: rgba(28, 41, 64, 0.1);
+      color: var(--text);
+      font-weight: 500;
+    }
+    .toc-item-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: transform 0.25s ease;
+    }
+    .toc-item:hover .toc-item-text { transform: translateX(4px); }
+    .toc-item-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text);
+      flex-shrink: 0;
+      margin-left: 12px;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .toc-item.active .toc-item-dot {
+      transform: scale(1);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
+
+  <!-- FULL-PAGE GRID BACKGROUND -->
+  <div id="page-bg" aria-hidden="true">
+    <div class="page-grid-base"></div>
+    <div class="page-grid-reveal" id="page-grid-reveal"></div>
+    <div class="page-blob page-blob-orange"></div>
+    <div class="page-blob page-blob-blue"></div>
+  </div>
 
   <!-- ── SIDEBAR ──────────────────────────────────── -->
   <aside class="sidebar">
@@ -866,17 +1295,12 @@
       <img src="brand_assets/logo.png" alt="Kiko" onerror="this.style.display='none';this.parentElement.innerHTML='K';">
     </div>
 
-    <a class="nav-item active" href="#" title="Home">
+    <a class="nav-item active" href="#" title="Home" id="home-nav">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span class="tooltip">Home</span>
     </a>
 
-    <a class="nav-item" href="#recent" title="Documents">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      <span class="tooltip">Documents</span>
-    </a>
-
-    <a class="nav-item" href="#" title="Audio Library" id="library-nav">
+<a class="nav-item" href="#" title="Audio Library" id="library-nav">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <span class="tooltip">Audio Library</span>
     </a>
@@ -895,7 +1319,7 @@
     <!-- TOP BAR -->
     <header class="topbar">
       <div class="topbar-left">
-        <div class="topbar-title">Kiko PDF Reader</div>
+        <div class="topbar-title" id="topbar-title">Kiko PDF Reader</div>
       </div>
       <div class="topbar-right">
         <button class="topbar-btn topbar-btn-ghost" id="feedback-btn">
@@ -911,10 +1335,10 @@
     </header>
 
     <!-- PAGE -->
-    <main class="page">
+    <main class="page" id="main-page">
 
       <!-- GREETING -->
-      <div class="greeting">
+      <div class="greeting" id="section-home" data-toc data-toc-depth="1" data-toc-title="Quick Actions">
         <div class="greeting-avatar">
           <img src="brand_assets/logo.png" alt="Kiko" onerror="this.style.display='none';">
         </div>
@@ -928,7 +1352,7 @@
       <div class="main-col">
 
         <!-- UPLOAD SECTION -->
-        <div class="upload-section">
+        <div class="upload-section" id="section-upload" data-toc data-toc-depth="2" data-toc-title="Upload PDF">
           <div class="upload-header">
             <div class="section-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -1075,7 +1499,7 @@
         </div>
 
         <!-- RECENT DOCS -->
-        <div class="recent-section" id="recent">
+        <div class="recent-section" id="recent" data-toc data-toc-depth="2" data-toc-title="Recent Documents">
           <div class="recent-header">
             <div class="section-title">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1152,10 +1576,74 @@
 
       </div>
     </main>
+    <!-- AUDIO LIBRARY PAGE -->
+    <section class="library-page" id="library-page">
+
+      <!-- Header -->
+      <div class="lib-topbar">
+        <div>
+          <h1 class="lib-title">Audio Library</h1>
+          <p class="lib-subtitle" id="lib-subtitle">Your processed documents</p>
+        </div>
+        <button class="topbar-btn topbar-btn-ghost" id="lib-clear-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Clear all
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="lib-stats" id="lib-stats"></div>
+
+      <!-- Cards -->
+      <div id="lib-content"></div>
+
+    </section>
+
   </div>
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+  <!-- DYNAMIC ISLAND TOC -->
+  <div id="toc-backdrop"></div>
+  <div id="toc-wrapper">
+    <div id="toc-island">
+      <!-- Closed pill -->
+      <div id="toc-pill">
+        <div class="toc-pill-dot"></div>
+        <div id="toc-title-wrap">
+          <span id="toc-title">Contents</span>
+        </div>
+        <svg id="toc-progress-svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10.75" stroke="var(--border)" stroke-width="2.5"/>
+          <circle id="toc-progress-circle" cx="12" cy="12" r="10.75"
+                  stroke="var(--text)" stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-dasharray="67.54"
+                  stroke-dashoffset="67.54"/>
+        </svg>
+      </div>
+      <!-- Expanded panel -->
+      <div id="toc-expanded">
+        <div class="toc-exp-header">
+          <span class="toc-exp-label">Table of Contents</span>
+          <button id="toc-close-btn" title="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div id="toc-list"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ── STATE ──────────────────────────────────────
@@ -1561,11 +2049,367 @@
     document.getElementById('feedback-btn').addEventListener('click', () => showToast('Thanks for using Kiko! Feedback coming soon.', 'info'));
     document.getElementById('upgrade-btn').addEventListener('click', () => showToast('Upgrade plans coming soon!', 'info'));
 
+    // ── INFINITE GRID REVEAL ──────────────────────
+    ;(function () {
+      var revealEl = document.getElementById('page-grid-reveal');
+      if (!revealEl) return;
+
+      // #page-bg is position:fixed so clientX/Y are already viewport coords — no offset needed
+      document.addEventListener('mousemove', function (e) {
+        var mask = 'radial-gradient(300px circle at ' + e.clientX + 'px ' + e.clientY + 'px, black, transparent)';
+        revealEl.style.webkitMaskImage = mask;
+        revealEl.style.maskImage       = mask;
+      });
+    })();
+
+    // ── AUDIO LIBRARY ─────────────────────────────
+    const homeNavEl    = document.getElementById('home-nav');
+    const libraryNavEl = document.getElementById('library-nav');
+    const mainPageEl   = document.getElementById('main-page');
+    const libraryPageEl= document.getElementById('library-page');
+    const topbarTitle  = document.getElementById('topbar-title');
+
+    let libPlayingIndex = null;
+    let libUtterance    = null;
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function switchPage(page) {
+      if (page === 'library') {
+        mainPageEl.style.display = 'none';
+        libraryPageEl.classList.add('show');
+        topbarTitle.textContent = 'Audio Library';
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        libraryNavEl.classList.add('active');
+        stopAudio();
+        renderLibrary();
+      } else {
+        libraryPageEl.classList.remove('show');
+        mainPageEl.style.display = '';
+        topbarTitle.textContent = 'Kiko PDF Reader';
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        homeNavEl.classList.add('active');
+        stopLibraryAudio();
+      }
+    }
+
+    homeNavEl.addEventListener('click',    e => { e.preventDefault(); switchPage('main'); });
+    libraryNavEl.addEventListener('click', e => { e.preventDefault(); switchPage('library'); });
+
+    document.getElementById('lib-clear-btn').addEventListener('click', () => {
+      history = [];
+      localStorage.removeItem('kiko_history');
+      renderLibrary();
+      renderHistory();
+      showToast('Library cleared', 'info');
+    });
+
+    function renderLibrary() {
+      const subtitleEl = document.getElementById('lib-subtitle');
+      const statsEl    = document.getElementById('lib-stats');
+      const contentEl  = document.getElementById('lib-content');
+
+      subtitleEl.textContent = history.length === 0
+        ? 'No documents yet'
+        : history.length + ' document' + (history.length !== 1 ? 's' : '') + ' processed';
+
+      statsEl.innerHTML =
+        '<div class="lib-stat-card">' +
+          '<div class="lib-stat-val">' + stats.count + '</div>' +
+          '<div class="lib-stat-lbl">Documents processed</div>' +
+        '</div>' +
+        '<div class="lib-stat-card">' +
+          '<div class="lib-stat-val">' + (stats.words >= 1000 ? (stats.words/1000).toFixed(1)+'k' : stats.words) + '</div>' +
+          '<div class="lib-stat-lbl">Words processed</div>' +
+        '</div>' +
+        '<div class="lib-stat-card">' +
+          '<div class="lib-stat-val">' + (stats.time < 60 ? stats.time+' min' : Math.round(stats.time/60)+' hrs') + '</div>' +
+          '<div class="lib-stat-lbl">Reading time saved</div>' +
+        '</div>';
+
+      if (!history.length) {
+        contentEl.innerHTML =
+          '<div class="lib-empty">' +
+            '<div class="lib-empty-icon">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' +
+              '</svg>' +
+            '</div>' +
+            '<h3>Your library is empty</h3>' +
+            '<p>Upload and summarize PDFs to add them here.</p>' +
+          '</div>';
+        return;
+      }
+
+      var cards = history.map(function(item, i) {
+        var wordCount  = item.words || 0;
+        var estMin     = Math.floor(wordCount / 180);
+        var estSec     = Math.round((wordCount / 180 - estMin) * 60);
+        var duration   = estMin > 0
+          ? '~' + estMin + ':' + String(estSec).padStart(2,'0') + ' listen time'
+          : '~' + Math.round(wordCount / 3) + 's listen time';
+
+        return '<div class="lib-card" id="lib-card-' + i + '">' +
+          '<div class="lib-card-top">' +
+            '<div class="lib-card-icon">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' +
+                '<polyline points="14 2 14 8 20 8"/>' +
+              '</svg>' +
+            '</div>' +
+            '<div class="lib-card-info">' +
+              '<div class="lib-card-name" title="' + escapeHtml(item.filename) + '">' + escapeHtml(item.filename) + '</div>' +
+              '<div class="lib-card-badges">' +
+                '<span class="lib-badge">' + item.pages + ' pages</span>' +
+                '<span class="lib-badge">' + (item.words||0).toLocaleString() + ' words</span>' +
+              '</div>' +
+              '<div class="lib-card-date">' + timeAgo(item.date) + ' · ' + duration + '</div>' +
+            '</div>' +
+            '<div class="lib-card-actions">' +
+              '<div class="lib-playing-ind">' +
+                '<div class="lib-play-bar"></div>' +
+                '<div class="lib-play-bar"></div>' +
+                '<div class="lib-play-bar"></div>' +
+              '</div>' +
+              '<button class="lib-listen-btn idle" data-lib-index="' + i + '">' +
+                '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+                ' Listen' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+          (item.summary
+            ? '<div class="lib-card-excerpt">' + escapeHtml(item.summary) + '</div>'
+            : '') +
+        '</div>';
+      }).join('');
+
+      contentEl.innerHTML = '<div class="lib-list">' + cards + '</div>';
+
+      contentEl.querySelectorAll('.lib-listen-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          toggleLibraryPlay(parseInt(btn.dataset.libIndex, 10));
+        });
+      });
+    }
+
+    function toggleLibraryPlay(index) {
+      if (libPlayingIndex === index) {
+        stopLibraryAudio();
+      } else {
+        stopLibraryAudio();
+        startLibraryPlay(index);
+      }
+    }
+
+    function startLibraryPlay(index) {
+      var item = history[index];
+      if (!item || !item.summary) return;
+
+      libPlayingIndex = index;
+      var card = document.getElementById('lib-card-' + index);
+      if (card) {
+        card.classList.add('playing');
+        var btn = card.querySelector('.lib-listen-btn');
+        btn.className = 'lib-listen-btn stop';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Stop';
+      }
+
+      libUtterance = new SpeechSynthesisUtterance(item.summary);
+      libUtterance.rate = 1;
+      libUtterance.onend  = function() { stopLibraryAudio(); showToast('Finished: ' + item.filename, 'info'); };
+      libUtterance.onerror = function() { stopLibraryAudio(); };
+      speechSynthesis.speak(libUtterance);
+      showToast('Playing: ' + item.filename, 'info');
+    }
+
+    function stopLibraryAudio() {
+      speechSynthesis.cancel();
+      if (libPlayingIndex !== null) {
+        var card = document.getElementById('lib-card-' + libPlayingIndex);
+        if (card) {
+          card.classList.remove('playing');
+          var btn = card.querySelector('.lib-listen-btn');
+          if (btn) {
+            btn.className = 'lib-listen-btn idle';
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Listen';
+          }
+        }
+      }
+      libPlayingIndex = null;
+      libUtterance    = null;
+    }
+
     // ── INIT ──────────────────────────────────────
     showState('upload');
     renderHistory();
     renderStats();
     checkHealth();
+
+    // ── DYNAMIC ISLAND TOC ────────────────────────
+    ;(function () {
+      const SELECTOR = '[data-toc]';
+      const CIRCUMFERENCE = 2 * Math.PI * 10.75; // matches r="10.75" in SVG
+
+      const backdrop    = document.getElementById('toc-backdrop');
+      const wrapper     = document.getElementById('toc-wrapper');
+      const island      = document.getElementById('toc-island');
+      const titleEl     = document.getElementById('toc-title');
+      const listEl      = document.getElementById('toc-list');
+      const closeBtn    = document.getElementById('toc-close-btn');
+      const progressEl  = document.getElementById('toc-progress-circle');
+
+      // initialise progress circle
+      progressEl.style.transition = 'stroke-dashoffset 0.15s ease-out';
+
+      let headings   = [];
+      let activeId   = null;
+      let isExpanded = false;
+      let progress   = 0;
+      let titleAnimating = false;
+
+      // ── Scan DOM for TOC targets ───────────────
+      setTimeout(function () {
+        const elements = Array.from(document.querySelectorAll(SELECTOR));
+
+        headings = elements
+          .filter(function (el) { return !el.hasAttribute('data-toc-ignore'); })
+          .map(function (el, i) {
+            if (!el.id) {
+              el.id = (el.textContent || '').toLowerCase()
+                .replace(/\s+/g, '-').replace(/[^\w-]/g, '') || ('toc-' + i);
+            }
+            var depthAttr = el.getAttribute('data-toc-depth');
+            var level = 2;
+            if (depthAttr) {
+              level = parseInt(depthAttr, 10);
+            } else {
+              var tag = el.tagName.toUpperCase();
+              if (/^H[1-6]$/.test(tag)) level = parseInt(tag[1], 10);
+            }
+            var text = el.getAttribute('data-toc-title') ||
+                       (el.textContent || '').trim() || 'Section';
+            return { id: el.id, text: text, level: level, element: el };
+          });
+
+        if (headings.length > 0) {
+          renderList();
+          onScroll();
+        }
+
+        // animate island into view
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            wrapper.classList.add('mounted');
+          });
+        });
+      }, 120);
+
+      // ── Scroll spy ────────────────────────────
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      function onScroll() {
+        var currentId = null;
+        for (var i = 0; i < headings.length; i++) {
+          if (headings[i].element.getBoundingClientRect().top <= 120) {
+            currentId = headings[i].id;
+          } else break;
+        }
+        if (!currentId && headings.length > 0) currentId = headings[0].id;
+
+        var total = document.documentElement.scrollHeight - window.innerHeight;
+        progress = total > 0 ? Math.min(100, Math.max(0, (window.scrollY / total) * 100)) : 0;
+        progressEl.setAttribute('stroke-dashoffset',
+          CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE);
+
+        if (currentId !== activeId) {
+          var prevActive = activeId;
+          activeId = currentId;
+          if (prevActive !== null) {
+            animateTitleChange(getTitleForId(activeId));
+          } else {
+            titleEl.textContent = getTitleForId(activeId);
+          }
+          updateListActiveState();
+        }
+      }
+
+      function getTitleForId(id) {
+        var h = headings.find(function (x) { return x.id === id; });
+        return h ? h.text : 'Contents';
+      }
+
+      function animateTitleChange(newText) {
+        if (titleAnimating) { titleEl.textContent = newText; return; }
+        titleAnimating = true;
+        titleEl.style.opacity = '0';
+        titleEl.style.transform = 'translateY(-8px)';
+        setTimeout(function () {
+          titleEl.textContent = newText;
+          titleEl.style.transform = 'translateY(8px)';
+          // force reflow
+          void titleEl.offsetHeight;
+          titleEl.style.opacity = '1';
+          titleEl.style.transform = 'translateY(0)';
+          titleAnimating = false;
+        }, 130);
+      }
+
+      function updateListActiveState() {
+        listEl.querySelectorAll('.toc-item').forEach(function (btn) {
+          btn.classList.toggle('active', btn.dataset.tocId === activeId);
+        });
+      }
+
+      // ── Render TOC list ───────────────────────
+      function renderList() {
+        var minLevel = Math.min.apply(null, headings.map(function (h) { return h.level; }));
+        listEl.innerHTML = headings.map(function (h) {
+          var indent = Math.max(0, h.level - minLevel);
+          var pl = indent * 14 + 12;
+          return '<button class="toc-item" data-toc-id="' + h.id + '" ' +
+                 'style="padding-left:' + pl + 'px">' +
+                 '<span class="toc-item-text">' + escHtml(h.text) + '</span>' +
+                 '<span class="toc-item-dot"></span>' +
+                 '</button>';
+        }).join('');
+
+        listEl.querySelectorAll('.toc-item').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var h = headings.find(function (x) { return x.id === btn.dataset.tocId; });
+            if (h) {
+              var y = h.element.getBoundingClientRect().top + window.scrollY - 80;
+              window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+            setExpanded(false);
+          });
+        });
+      }
+
+      // ── Expand / collapse ─────────────────────
+      function setExpanded(val) {
+        isExpanded = val;
+        island.classList.toggle('expanded', val);
+        backdrop.classList.toggle('visible', val);
+      }
+
+      island.addEventListener('click', function () {
+        if (!isExpanded) setExpanded(true);
+      });
+      closeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setExpanded(false);
+      });
+      backdrop.addEventListener('click', function () { setExpanded(false); });
+
+      // ── Util ──────────────────────────────────
+      function escHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+    })();
   </script>
 </body>
 </html>
