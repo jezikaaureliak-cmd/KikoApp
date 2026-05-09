@@ -1,0 +1,14 @@
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Temp files
+.tmp/

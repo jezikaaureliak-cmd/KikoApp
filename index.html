@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiko – PDF Audio Summarizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy:       #1C2940;
+      --navy-mid:   #243450;
+      --blue:       #4A8FD4;
+      --blue-light: #5BA8F0;
+      --blue-bg:    #EBF4FF;
+      --green:      #22C55E;
+      --green-bg:   #F0FDF4;
+      --amber:      #F59E0B;
+      --amber-bg:   #FFFBEB;
+      --red:        #EF4444;
+      --red-bg:     #FEF2F2;
+      --white:      #FFFFFF;
+      --surface:    #F7F9FC;
+      --border:     #E5EAF0;
+      --text:       #1C2940;
+      --muted:      #6B7A90;
+      --muted-2:    #9DAAB8;
+      --radius:     12px;
+      --radius-lg:  18px;
+      --shadow:     0 1px 4px rgba(28,41,64,.06), 0 4px 16px rgba(28,41,64,.06);
+      --shadow-lg:  0 4px 12px rgba(28,41,64,.08), 0 16px 40px rgba(28,41,64,.1);
+      --sidebar-w:  72px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── SIDEBAR ────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      z-index: 100;
+      gap: 4px;
+    }
+
+    .sidebar-logo {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sidebar-logo img { width: 28px; height: 28px; object-fit: contain; }
+
+    .nav-item {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background .15s;
+      color: rgba(255,255,255,.45);
+      position: relative;
+      text-decoration: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); }
+    .nav-item.active { background: var(--blue); color: #fff; }
+
+    .nav-item svg { width: 20px; height: 20px; }
+
+    .nav-item .tooltip {
+      position: absolute;
+      left: calc(100% + 10px);
+      background: var(--navy);
+      color: #fff;
+      font-size: 12px; font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0; pointer-events: none;
+      transition: opacity .15s;
+      z-index: 200;
+    }
+    .nav-item:hover .tooltip { opacity: 1; }
+
+    .sidebar-spacer { flex: 1; }
+
+    /* ── MAIN LAYOUT ─────────────────────────────── */
+    .app-shell {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ─────────────────────────────────── */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    .topbar-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+    }
+    .topbar-btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .topbar-btn-ghost:hover { background: var(--surface); color: var(--text); }
+
+    .topbar-btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(74,143,212,.3);
+    }
+    .topbar-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(74,143,212,.4); }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ── PAGE CONTENT ────────────────────────────── */
+    .page {
+      flex: 1;
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 24px;
+      align-items: start;
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── GREETING ────────────────────────────────── */
+    .greeting {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 24px;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .greeting-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--blue-bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .greeting-avatar img { width: 38px; height: 38px; object-fit: contain; }
+    .greeting-text h2 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .greeting-text p { font-size: 13px; color: var(--muted); }
+
+    /* ── LEFT COLUMN ─────────────────────────────── */
+    .main-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    /* ── UPLOAD ZONE ─────────────────────────────── */
+    .upload-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .upload-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title svg { color: var(--blue); }
+
+    .mode-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .mode-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      color: var(--muted);
+      background: transparent;
+      transition: all .15s;
+    }
+    .mode-btn.active {
+      background: var(--white);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(28,41,64,.1);
+    }
+
+    .drop-zone {
+      margin: 20px 24px 24px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: var(--surface);
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--blue);
+      background: var(--blue-bg);
+    }
+    .drop-zone.drag-over { transform: scale(1.01); }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      width: 60px; height: 60px;
+      background: var(--blue-bg);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      transition: transform .2s;
+    }
+    .drop-zone:hover .drop-icon { transform: translateY(-3px); }
+    .drop-icon svg { width: 28px; height: 28px; color: var(--blue); }
+
+    .drop-zone h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .drop-zone p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+    .browse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      border: none;
+      cursor: pointer;
+      transition: all .15s;
+      pointer-events: none;
+    }
+    .drop-zone:hover .browse-btn { background: var(--blue-light); }
+
+    /* ── PROCESSING STATE ────────────────────────── */
+    .processing-state {
+      margin: 0 24px 24px;
+      padding: 32px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      text-align: center;
+      display: none;
+    }
+    .processing-state.show { display: block; }
+
+    .spinner-ring {
+      width: 52px; height: 52px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .processing-state h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .processing-state p { font-size: 13px; color: var(--muted); }
+
+    .processing-steps {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    .p-step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted-2);
+    }
+    .p-step.active { color: var(--blue); font-weight: 500; }
+    .p-step.done { color: var(--green); }
+    .p-step-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ── RESULT STATE ────────────────────────────── */
+    .result-state {
+      margin: 0 24px 24px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .result-state.show { display: flex; }
+
+    .doc-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--blue-bg);
+      border-radius: var(--radius);
+      border: 1px solid rgba(74,143,212,.2);
+    }
+    .doc-icon {
+      width: 42px; height: 42px;
+      background: var(--blue);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-icon svg { width: 22px; height: 22px; color: #fff; }
+    .doc-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; word-break: break-word; }
+    .doc-info p { font-size: 12px; color: var(--muted); }
+    .doc-meta { display: flex; gap: 12px; margin-top: 4px; }
+    .doc-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px;
+      background: rgba(74,143,212,.12);
+      color: var(--blue);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .doc-reset {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      transition: all .15s;
+      display: flex;
+    }
+    .doc-reset:hover { background: rgba(239,68,68,.1); color: var(--red); }
+
+    .summary-box {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+    .summary-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .summary-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+    }
+    .copy-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+    .summary-text {
+      font-size: 14px;
+      line-height: 1.85;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    /* ── AUDIO PLAYER ────────────────────────────── */
+    .audio-player {
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: 20px;
+      color: #fff;
+    }
+
+    .audio-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .audio-header svg { width: 18px; height: 18px; color: var(--blue-light); }
+    .audio-header span { font-size: 13px; font-weight: 600; }
+    .audio-header small {
+      margin-left: auto;
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+    }
+
+    .progress-bar-wrap {
+      height: 4px;
+      background: rgba(255,255,255,.12);
+      border-radius: 2px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--blue-light));
+      border-radius: 2px;
+      width: 0%;
+      transition: width .3s linear;
+    }
+    .progress-thumb {
+      position: absolute;
+      top: 50%; right: 0;
+      transform: translate(50%, -50%);
+      width: 12px; height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(74,143,212,.4);
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .progress-bar-wrap:hover .progress-thumb { opacity: 1; }
+
+    .audio-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ctrl-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      border: none;
+      color: rgba(255,255,255,.7);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+    .ctrl-btn svg { width: 16px; height: 16px; }
+
+    .play-btn {
+      width: 46px; height: 46px;
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(74,143,212,.4);
+    }
+    .play-btn:hover { background: var(--blue-light); transform: scale(1.05); }
+    .play-btn svg { width: 20px; height: 20px; }
+
+    .audio-time {
+      font-size: 12px;
+      color: rgba(255,255,255,.4);
+      font-variant-numeric: tabular-nums;
+      margin-left: auto;
+    }
+
+    .audio-settings {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      flex-wrap: wrap;
+    }
+
+    .setting-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .setting-label {
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+      white-space: nowrap;
+    }
+
+    .speed-btns { display: flex; gap: 4px; }
+    .speed-btn {
+      padding: 3px 9px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: transparent;
+      color: rgba(255,255,255,.5);
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .speed-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .speed-btn:hover:not(.active) { border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.8); }
+
+    .voice-select {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.7);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      outline: none;
+      max-width: 140px;
+    }
+
+    .playing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: 8px;
+    }
+    .play-bar {
+      width: 3px;
+      background: var(--blue-light);
+      border-radius: 2px;
+      animation: playBar .8s ease-in-out infinite;
+    }
+    .play-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .play-bar:nth-child(2) { height: 14px; animation-delay: .15s; }
+    .play-bar:nth-child(3) { height: 10px; animation-delay: .3s; }
+    .play-bar:nth-child(4) { height: 6px; animation-delay: .1s; }
+    @keyframes playBar {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(.4); }
+    }
+
+    .reset-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+    }
+    .reset-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+
+    /* ── ERROR STATE ─────────────────────────────── */
+    .error-state {
+      margin: 0 24px 24px;
+      padding: 18px;
+      background: var(--red-bg);
+      border: 1px solid rgba(239,68,68,.2);
+      border-radius: var(--radius);
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .error-state.show { display: flex; }
+    .error-icon { color: var(--red); flex-shrink: 0; margin-top: 1px; }
+    .error-icon svg { width: 18px; height: 18px; }
+    .error-title { font-size: 14px; font-weight: 600; color: var(--red); margin-bottom: 3px; }
+    .error-msg { font-size: 13px; color: #7f1d1d; }
+
+    /* ── RECENT DOCS ─────────────────────────────── */
+    .recent-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .recent-header {
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .clear-btn {
+      font-size: 12px;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: color .15s;
+    }
+    .clear-btn:hover { color: var(--red); }
+
+    .recent-list {
+      padding: 8px;
+    }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: background .15s;
+      cursor: pointer;
+    }
+    .recent-item:hover { background: var(--surface); }
+
+    .recent-icon {
+      width: 34px; height: 34px;
+      background: var(--blue-bg);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .recent-icon svg { width: 18px; height: 18px; color: var(--blue); }
+
+    .recent-info h4 { font-size: 13px; font-weight: 500; margin-bottom: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+    .recent-info p { font-size: 11px; color: var(--muted); }
+
+    .recent-empty {
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .recent-empty p { font-size: 13px; color: var(--muted-2); }
+
+    /* ── RIGHT PANEL ─────────────────────────────── */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── API KEY CARD ────────────────────────────── */
+    .api-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .api-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .api-card p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .api-status.ok { background: var(--green-bg); color: #166534; }
+    .api-status.missing { background: var(--amber-bg); color: #92400e; }
+    .api-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    .env-hint {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: monospace;
+      line-height: 1.6;
+      border: 1px solid var(--border);
+    }
+
+    /* ── TIPS CARD ───────────────────────────────── */
+    .tips-card {
+      background: linear-gradient(140deg, var(--navy) 0%, #2a3e60 100%);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      color: #fff;
+    }
+
+    .tips-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .tip-item:last-child { margin-bottom: 0; }
+    .tip-num {
+      width: 20px; height: 20px;
+      background: rgba(74,143,212,.3);
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .tip-text { font-size: 12px; color: rgba(255,255,255,.65); line-height: 1.5; }
+
+    /* ── STATS CARD ──────────────────────────────── */
+    .stats-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+    }
+    .stats-card h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 14px; }
+
+    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .stat-row:last-child { margin-bottom: 0; }
+    .stat-name { font-size: 13px; color: var(--muted); }
+    .stat-val { font-size: 14px; font-weight: 700; color: var(--text); }
+
+    /* ── NOTIFICATION TOAST ──────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--navy);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .25s cubic-bezier(.34,1.56,.64,1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 300px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error { border-left: 3px solid var(--red); }
+    .toast.info { border-left: 3px solid var(--blue); }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .greeting { grid-column: 1; }
+      .right-col { order: -1; }
+    }
+
+    @media (max-width: 600px) {
+      :root { --sidebar-w: 56px; }
+      .page { padding: 16px; gap: 14px; }
+      .topbar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="brand_assets/logo.png" alt="Kiko" onerror="this.style.display='none';this.parentElement.innerHTML='K';">
+    </div>
+
+    <a class="nav-item active" href="#" title="Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tooltip">Home</span>
+    </a>
+
+    <a class="nav-item" href="#recent" title="Documents">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span class="tooltip">Documents</span>
+    </a>
+
+    <a class="nav-item" href="#" title="Audio Library" id="library-nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <span class="tooltip">Audio Library</span>
+    </a>
+
+    <div class="sidebar-spacer"></div>
+
+    <a class="nav-item" href="#" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="tooltip">Settings</span>
+    </a>
+  </aside>
+
+  <!-- ── APP SHELL ─────────────────────────────────── -->
+  <div class="app-shell">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Kiko PDF Reader</div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn topbar-btn-ghost" id="feedback-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+        </button>
+        <button class="topbar-btn topbar-btn-primary" id="upgrade-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+          Upgrade
+        </button>
+        <div class="avatar" title="Jessica A.">J</div>
+      </div>
+    </header>
+
+    <!-- PAGE -->
+    <main class="page">
+
+      <!-- GREETING -->
+      <div class="greeting">
+        <div class="greeting-avatar">
+          <img src="brand_assets/logo.png" alt="Kiko" onerror="this.style.display='none';">
+        </div>
+        <div class="greeting-text">
+          <h2 id="greeting-msg">Hey, ready to listen and learn?</h2>
+          <p>Upload any PDF and I'll read it to you with an audio summary powered by Gemini AI.</p>
+        </div>
+      </div>
+
+      <!-- LEFT COLUMN -->
+      <div class="main-col">
+
+        <!-- UPLOAD SECTION -->
+        <div class="upload-section">
+          <div class="upload-header">
+            <div class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload PDF
+            </div>
+            <div class="mode-toggle">
+              <button class="mode-btn active" data-mode="summary">Quick Summary</button>
+              <button class="mode-btn" data-mode="detailed">Detailed</button>
+            </div>
+          </div>
+
+          <!-- DROP ZONE -->
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".pdf,application/pdf">
+            <div class="drop-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </div>
+            <h3>Drop your PDF here</h3>
+            <p>or click anywhere in this box to browse</p>
+            <button class="browse-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Choose PDF
+            </button>
+          </div>
+
+          <!-- PROCESSING -->
+          <div class="processing-state" id="processing-state">
+            <div class="spinner-ring"></div>
+            <h3 id="processing-title">Reading your document…</h3>
+            <p id="processing-sub">Extracting text and generating your summary</p>
+            <div class="processing-steps">
+              <div class="p-step active" id="step-extract">
+                <div class="p-step-dot"></div> Extracting
+              </div>
+              <div class="p-step" id="step-summarize">
+                <div class="p-step-dot"></div> Summarizing
+              </div>
+              <div class="p-step" id="step-ready">
+                <div class="p-step-dot"></div> Ready
+              </div>
+            </div>
+          </div>
+
+          <!-- ERROR -->
+          <div class="error-state" id="error-state">
+            <div class="error-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <div class="error-title">Something went wrong</div>
+              <div class="error-msg" id="error-msg">An unexpected error occurred.</div>
+            </div>
+          </div>
+
+          <!-- RESULT -->
+          <div class="result-state" id="result-state">
+            <!-- Doc info card -->
+            <div class="doc-card">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="doc-info">
+                <h4 id="doc-filename">document.pdf</h4>
+                <div class="doc-meta">
+                  <span class="doc-badge" id="doc-pages">0 pages</span>
+                  <span class="doc-badge" id="doc-words">0 words</span>
+                  <span class="doc-badge" id="doc-mode">Summary</span>
+                </div>
+              </div>
+              <button class="doc-reset" id="doc-reset" title="Upload a new PDF">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
+
+            <!-- Summary text -->
+            <div class="summary-box">
+              <div class="summary-box-header">
+                <div class="summary-label">AI Summary</div>
+                <button class="copy-btn" id="copy-btn">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="summary-text" id="summary-text"></div>
+            </div>
+
+            <!-- Audio Player -->
+            <div class="audio-player">
+              <div class="audio-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <span>Audio Playback</span>
+                <div class="playing-indicator" id="playing-indicator" style="display:none">
+                  <div class="play-bar"></div>
+                  <div class="play-bar"></div>
+                  <div class="play-bar"></div>
+                  <div class="play-bar"></div>
+                </div>
+                <small id="audio-status">Ready</small>
+              </div>
+
+              <div class="progress-bar-wrap" id="progress-wrap">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+                <div class="progress-thumb" id="progress-thumb"></div>
+              </div>
+
+              <div class="audio-controls">
+                <button class="ctrl-btn" id="restart-btn" title="Restart">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                </button>
+                <button class="ctrl-btn play-btn" id="play-btn">
+                  <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
+                <button class="ctrl-btn" id="stop-btn" title="Stop">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </button>
+                <span class="audio-time" id="audio-time">0:00 / 0:00</span>
+              </div>
+
+              <div class="audio-settings">
+                <div class="setting-group">
+                  <span class="setting-label">Speed</span>
+                  <div class="speed-btns">
+                    <button class="speed-btn" data-speed="0.75">0.75×</button>
+                    <button class="speed-btn active" data-speed="1">1×</button>
+                    <button class="speed-btn" data-speed="1.25">1.25×</button>
+                    <button class="speed-btn" data-speed="1.5">1.5×</button>
+                    <button class="speed-btn" data-speed="2">2×</button>
+                  </div>
+                </div>
+                <div class="setting-group" style="margin-left:auto">
+                  <span class="setting-label">Voice</span>
+                  <select class="voice-select" id="voice-select"></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- New upload button -->
+            <button class="reset-btn" id="new-upload-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload another PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- RECENT DOCS -->
+        <div class="recent-section" id="recent">
+          <div class="recent-header">
+            <div class="section-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Recent Documents
+            </div>
+            <button class="clear-btn" id="clear-history-btn">Clear all</button>
+          </div>
+          <div class="recent-list" id="recent-list">
+            <div class="recent-empty">
+              <p>Your recently summarized PDFs will appear here</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+
+        <!-- API STATUS -->
+        <div class="api-card">
+          <h3>API Status</h3>
+          <p>Kiko uses Gemini 1.5 Flash to understand and summarize your documents.</p>
+          <div class="api-status missing" id="api-status">
+            <div class="api-status-dot"></div>
+            <span id="api-status-text">Checking…</span>
+          </div>
+          <div class="env-hint" id="env-hint" style="display:none">
+            Add to your <strong>.env</strong>:<br>
+            <code>GEMINI_API_KEY=AIza…</code>
+          </div>
+        </div>
+
+        <!-- TIPS -->
+        <div class="tips-card">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            How to use
+          </h3>
+          <div class="tip-item">
+            <div class="tip-num">1</div>
+            <div class="tip-text">Upload any PDF — research papers, reports, books, contracts</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-num">2</div>
+            <div class="tip-text">Choose Quick Summary or Detailed for a deeper breakdown</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-num">3</div>
+            <div class="tip-text">Hit play and listen — adjust speed and voice to your liking</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-num">4</div>
+            <div class="tip-text">Copy the summary text or re-upload a new document anytime</div>
+          </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-card">
+          <h3>Session Stats</h3>
+          <div class="stat-row">
+            <span class="stat-name">PDFs summarized</span>
+            <span class="stat-val" id="stat-count">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Words processed</span>
+            <span class="stat-val" id="stat-words">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Time saved</span>
+            <span class="stat-val" id="stat-time">0 min</span>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── STATE ──────────────────────────────────────
+    let currentMode = 'summary';
+    let summaryText = '';
+    let utterance = null;
+    let isPlaying = false;
+    let isPaused = false;
+    let currentWordIndex = 0;
+    let words = [];
+    let progressInterval = null;
+    let estimatedDuration = 0;
+    let elapsedSeconds = 0;
+    let startTime = null;
+    let selectedSpeed = 1;
+    let stats = JSON.parse(localStorage.getItem('kiko_stats') || '{"count":0,"words":0,"time":0}');
+    let history = JSON.parse(localStorage.getItem('kiko_history') || '[]');
+
+    // ── ELEMENTS ───────────────────────────────────
+    const dropZone      = document.getElementById('drop-zone');
+    const fileInput     = document.getElementById('file-input');
+    const processingEl  = document.getElementById('processing-state');
+    const resultEl      = document.getElementById('result-state');
+    const errorEl       = document.getElementById('error-state');
+    const summaryEl     = document.getElementById('summary-text');
+    const playBtn       = document.getElementById('play-btn');
+    const playIcon      = document.getElementById('play-icon');
+    const pauseIcon     = document.getElementById('pause-icon');
+    const stopBtn       = document.getElementById('stop-btn');
+    const restartBtn    = document.getElementById('restart-btn');
+    const progressFill  = document.getElementById('progress-fill');
+    const audioTime     = document.getElementById('audio-time');
+    const audioStatus   = document.getElementById('audio-status');
+    const playingInd    = document.getElementById('playing-indicator');
+    const voiceSelect   = document.getElementById('voice-select');
+    const statCount     = document.getElementById('stat-count');
+    const statWords     = document.getElementById('stat-words');
+    const statTime      = document.getElementById('stat-time');
+
+    // ── GREETINGS ──────────────────────────────────
+    const hour = new Date().getHours();
+    const greetMsg = hour < 12 ? 'Good morning! Ready to learn something new?' :
+                     hour < 17 ? 'Good afternoon! Drop a PDF and I\'ll read it for you.' :
+                                 'Good evening! Let\'s make the most of your time.';
+    document.getElementById('greeting-msg').textContent = greetMsg;
+
+    // ── MODE TOGGLE ────────────────────────────────
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+      });
+    });
+
+    // ── VOICES ────────────────────────────────────
+    function loadVoices() {
+      const voices = speechSynthesis.getVoices();
+      const engVoices = voices.filter(v => v.lang.startsWith('en'));
+      voiceSelect.innerHTML = '';
+      if (!engVoices.length) {
+        voiceSelect.innerHTML = '<option value="">Default voice</option>';
+        return;
+      }
+      engVoices.forEach((v, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = v.name.replace('(English', '').replace(')', '').trim();
+        voiceSelect.appendChild(opt);
+      });
+    }
+    speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    loadVoices();
+
+    // ── DRAG & DROP ────────────────────────────────
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    // ── FILE HANDLING ──────────────────────────────
+    async function handleFile(file) {
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        showError('Please upload a PDF file.');
+        return;
+      }
+
+      showState('processing');
+      stopAudio();
+
+      // Animate steps
+      const stepExtract   = document.getElementById('step-extract');
+      const stepSummarize = document.getElementById('step-summarize');
+      const stepReady     = document.getElementById('step-ready');
+      stepExtract.className   = 'p-step active';
+      stepSummarize.className = 'p-step';
+      stepReady.className     = 'p-step';
+
+      setTimeout(() => {
+        stepExtract.className   = 'p-step done';
+        stepSummarize.className = 'p-step active';
+        document.getElementById('processing-title').textContent = 'Generating summary…';
+        document.getElementById('processing-sub').textContent = 'Gemini AI is reading and summarizing your document';
+      }, 1200);
+
+      try {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        formData.append('mode', currentMode);
+
+        const res = await fetch('/api/summarize', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+        stepSummarize.className = 'p-step done';
+        stepReady.className     = 'p-step active';
+        await sleep(400);
+        stepReady.className     = 'p-step done';
+
+        showResult(data, file.name);
+
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function showResult(data, filename) {
+      summaryText = data.summary;
+      words = summaryText.split(/\s+/);
+      estimatedDuration = Math.round(words.length / (180 * selectedSpeed / 60));
+
+      document.getElementById('doc-filename').textContent = data.filename || filename;
+      document.getElementById('doc-pages').textContent = `${data.pageCount} page${data.pageCount !== 1 ? 's' : ''}`;
+      document.getElementById('doc-words').textContent = `${data.wordCount.toLocaleString()} words`;
+      document.getElementById('doc-mode').textContent = data.mode === 'detailed' ? 'Detailed' : 'Summary';
+      summaryEl.textContent = data.summary;
+
+      // Update stats
+      stats.count++;
+      stats.words += data.wordCount;
+      stats.time += Math.round(data.wordCount / 200);
+      localStorage.setItem('kiko_stats', JSON.stringify(stats));
+      renderStats();
+
+      // Add to history
+      history.unshift({ filename: data.filename || filename, pages: data.pageCount, words: data.wordCount, date: new Date().toISOString(), summary: data.summary });
+      history = history.slice(0, 8);
+      localStorage.setItem('kiko_history', JSON.stringify(history));
+      renderHistory();
+
+      showState('result');
+      showToast('Summary ready! Press play to listen.', 'success');
+    }
+
+    function showError(msg) {
+      document.getElementById('error-msg').textContent = msg;
+      showState('error');
+    }
+
+    function showState(state) {
+      dropZone.style.display       = state === 'upload'      ? ''       : 'none';
+      processingEl.className       = 'processing-state'      + (state === 'processing' ? ' show' : '');
+      errorEl.className            = 'error-state'           + (state === 'error'      ? ' show' : '');
+      resultEl.className           = 'result-state'          + (state === 'result'     ? ' show' : '');
+    }
+
+    // ── AUDIO ──────────────────────────────────────
+    function getSelectedVoice() {
+      const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+      const idx = parseInt(voiceSelect.value);
+      return voices[idx] || null;
+    }
+
+    function playAudio() {
+      if (!summaryText) return;
+      speechSynthesis.cancel();
+
+      utterance = new SpeechSynthesisUtterance(summaryText);
+      utterance.rate = selectedSpeed;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      const voice = getSelectedVoice();
+      if (voice) utterance.voice = voice;
+
+      elapsedSeconds = 0;
+      startTime = Date.now();
+      estimatedDuration = Math.round(words.length / (180 * selectedSpeed / 60));
+      isPlaying = true;
+      isPaused = false;
+      updatePlayUI(true);
+
+      progressInterval = setInterval(() => {
+        if (!isPaused && isPlaying) {
+          elapsedSeconds = (Date.now() - startTime) / 1000;
+          const pct = Math.min((elapsedSeconds / estimatedDuration) * 100, 99);
+          progressFill.style.width = pct + '%';
+          audioTime.textContent = `${fmtTime(elapsedSeconds)} / ${fmtTime(estimatedDuration)}`;
+        }
+      }, 300);
+
+      utterance.onend = () => {
+        isPlaying = false;
+        isPaused = false;
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
+        audioTime.textContent = `${fmtTime(estimatedDuration)} / ${fmtTime(estimatedDuration)}`;
+        updatePlayUI(false);
+        audioStatus.textContent = 'Finished';
+        showToast('Audio finished!', 'info');
+      };
+
+      utterance.onerror = () => {
+        isPlaying = false;
+        updatePlayUI(false);
+        audioStatus.textContent = 'Error';
+      };
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function pauseAudio() {
+      speechSynthesis.pause();
+      isPaused = true;
+      isPlaying = false;
+      updatePlayUI(false);
+      audioStatus.textContent = 'Paused';
+    }
+
+    function resumeAudio() {
+      speechSynthesis.resume();
+      isPaused = false;
+      isPlaying = true;
+      startTime = Date.now() - (elapsedSeconds * 1000);
+      updatePlayUI(true);
+      audioStatus.textContent = 'Playing';
+    }
+
+    function stopAudio() {
+      speechSynthesis.cancel();
+      clearInterval(progressInterval);
+      isPlaying = false;
+      isPaused = false;
+      elapsedSeconds = 0;
+      progressFill.style.width = '0%';
+      audioTime.textContent = '0:00 / 0:00';
+      audioStatus.textContent = 'Ready';
+      updatePlayUI(false);
+    }
+
+    function updatePlayUI(playing) {
+      playIcon.style.display  = playing ? 'none' : '';
+      pauseIcon.style.display = playing ? ''     : 'none';
+      playingInd.style.display = playing ? 'flex' : 'none';
+      audioStatus.textContent = playing ? 'Playing' : (isPaused ? 'Paused' : 'Ready');
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) pauseAudio();
+      else if (isPaused) resumeAudio();
+      else playAudio();
+    });
+
+    stopBtn.addEventListener('click', stopAudio);
+    restartBtn.addEventListener('click', () => { stopAudio(); setTimeout(playAudio, 100); });
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedSpeed = parseFloat(btn.dataset.speed);
+        if (isPlaying || isPaused) {
+          const wasPlaying = isPlaying;
+          stopAudio();
+          if (wasPlaying) setTimeout(playAudio, 100);
+        }
+      });
+    });
+
+    // ── RESET / NEW UPLOAD ─────────────────────────
+    function resetToUpload() {
+      stopAudio();
+      showState('upload');
+      fileInput.value = '';
+      summaryText = '';
+    }
+
+    document.getElementById('doc-reset').addEventListener('click', resetToUpload);
+    document.getElementById('new-upload-btn').addEventListener('click', resetToUpload);
+
+    // ── COPY ──────────────────────────────────────
+    document.getElementById('copy-btn').addEventListener('click', async () => {
+      if (!summaryText) return;
+      await navigator.clipboard.writeText(summaryText);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`; btn.classList.remove('copied'); }, 2000);
+    });
+
+    // ── HISTORY ───────────────────────────────────
+    function renderHistory() {
+      const list = document.getElementById('recent-list');
+      if (!history.length) {
+        list.innerHTML = '<div class="recent-empty"><p>Your recently summarized PDFs will appear here</p></div>';
+        return;
+      }
+      list.innerHTML = history.map(item => `
+        <div class="recent-item" data-summary="${encodeURIComponent(item.summary || '')}">
+          <div class="recent-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="recent-info">
+            <h4 title="${item.filename}">${item.filename}</h4>
+            <p>${item.pages} pages · ${item.words?.toLocaleString() || '?'} words · ${timeAgo(item.date)}</p>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.recent-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const s = decodeURIComponent(item.dataset.summary);
+          if (s) {
+            summaryText = s;
+            summaryEl.textContent = s;
+            words = s.split(/\s+/);
+            document.getElementById('doc-filename').textContent = item.querySelector('h4').textContent;
+            showState('result');
+            showToast('Loaded from history', 'info');
+          }
+        });
+      });
+    }
+
+    document.getElementById('clear-history-btn').addEventListener('click', () => {
+      history = [];
+      localStorage.removeItem('kiko_history');
+      renderHistory();
+      showToast('History cleared', 'info');
+    });
+
+    // ── STATS ─────────────────────────────────────
+    function renderStats() {
+      statCount.textContent = stats.count;
+      statWords.textContent = stats.words >= 1000 ? (stats.words / 1000).toFixed(1) + 'k' : stats.words;
+      statTime.textContent = stats.time < 60 ? stats.time + ' min' : Math.round(stats.time / 60) + ' hrs';
+    }
+
+    // ── API HEALTH CHECK ──────────────────────────
+    async function checkHealth() {
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        const statusEl  = document.getElementById('api-status');
+        const textEl    = document.getElementById('api-status-text');
+        const hintEl    = document.getElementById('env-hint');
+        if (data.apiKeySet) {
+          statusEl.className = 'api-status ok';
+          textEl.textContent = 'Gemini API connected';
+          hintEl.style.display = 'none';
+        } else {
+          statusEl.className = 'api-status missing';
+          textEl.textContent = 'API key not configured';
+          hintEl.style.display = 'block';
+        }
+      } catch { /* server may not be ready */ }
+    }
+
+    // ── TOAST ─────────────────────────────────────
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ── UTILS ──────────────────────────────────────
+    function fmtTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function timeAgo(iso) {
+      const diff = (Date.now() - new Date(iso)) / 1000;
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── TOPBAR BUTTONS ────────────────────────────
+    document.getElementById('feedback-btn').addEventListener('click', () => showToast('Thanks for using Kiko! Feedback coming soon.', 'info'));
+    document.getElementById('upgrade-btn').addEventListener('click', () => showToast('Upgrade plans coming soon!', 'info'));
+
+    // ── INIT ──────────────────────────────────────
+    showState('upload');
+    renderHistory();
+    renderStats();
+    checkHealth();
+  </script>
+</body>
+</html>
