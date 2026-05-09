@@ -1063,6 +1063,191 @@
       .library-page { padding: 16px; }
     }
 
+    /* ── GLOW MENU ─────────────────────────────────── */
+    #glow-menu {
+      padding: 6px;
+      border-radius: 18px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(28,41,64,0.1);
+      box-shadow: 0 4px 16px rgba(28,41,64,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow-nav-bg {
+      position: absolute;
+      inset: -8px;
+      border-radius: 26px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(74,143,212,0.18)  0%, transparent 55%),
+        radial-gradient(circle at 55% 50%, rgba(232,133,122,0.14)  0%, transparent 55%),
+        radial-gradient(circle at 85% 50%, rgba(92,138,91,0.12)   0%, transparent 55%);
+    }
+    #glow-menu:hover .glow-nav-bg { opacity: 1; }
+
+    .glow-nav-list {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      list-style: none;
+      position: relative;
+      z-index: 10;
+    }
+
+    .glow-nav-item { position: relative; }
+
+    .glow-nav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: block;
+      padding: 0;
+    }
+
+    /* Perspective container — parent of both flip faces */
+    .glow-item-inner {
+      position: relative;
+      perspective: 600px;
+      border-radius: 12px;
+      display: block;
+    }
+
+    /* Radial glow that scales up on active item */
+    .glow-item-glow {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 16px;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .glow-nav-item.active .glow-item-glow {
+      opacity: 1;
+      transform: scale(2);
+    }
+
+    /* Shared face styles */
+    .glow-item-front,
+    .glow-item-back {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 13px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--muted);
+      transition: transform 0.5s cubic-bezier(0.2, 0, 0.36, 1),
+                  opacity  0.35s ease,
+                  color    0.2s;
+    }
+    .glow-nav-item.active .glow-item-front,
+    .glow-nav-item.active .glow-item-back,
+    .glow-item-inner:hover .glow-item-front,
+    .glow-item-inner:hover .glow-item-back { color: var(--text); }
+
+    /* Front face: folds away downward on hover */
+    .glow-item-front {
+      position: relative;
+      z-index: 10;
+      transform-origin: center bottom;
+      transform: rotateX(0deg);
+      opacity: 1;
+    }
+    .glow-item-inner:hover .glow-item-front {
+      transform: rotateX(-90deg);
+      opacity: 0;
+    }
+
+    /* Back face: folds in from above on hover */
+    .glow-item-back {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      transform-origin: center top;
+      transform: rotateX(90deg);
+      opacity: 0;
+    }
+    .glow-item-inner:hover .glow-item-back {
+      transform: rotateX(0deg);
+      opacity: 1;
+    }
+
+    /* Icon colour driven by CSS custom property set per-item */
+    .glow-item-icon {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      color: var(--text);
+      transition: color 0.3s;
+    }
+    .glow-item-icon svg { width: 15px; height: 15px; }
+    .glow-nav-item.active .glow-item-icon,
+    .glow-item-inner:hover .glow-item-icon { color: var(--icon-color, var(--blue)); }
+
+    /* ── LANGUAGE DROPDOWN ──────────────────────────── */
+    #lang-dropdown {
+      position: fixed;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+      min-width: 196px;
+      z-index: 9000;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.2s ease,
+                  transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #lang-dropdown.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 9px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+      text-align: left;
+    }
+    .lang-option:hover { background: var(--surface); }
+    .lang-option.selected { color: var(--blue); }
+    .lang-flag-icon { flex-shrink: 0; color: var(--muted); }
+    .lang-option.selected .lang-flag-icon { color: var(--blue); }
+    .lang-check {
+      margin-left: auto;
+      flex-shrink: 0;
+      color: var(--blue);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .lang-option.selected .lang-check { opacity: 1; }
+
     /* ── DYNAMIC ISLAND TOC ───────────────────────── */
     #toc-backdrop {
       position: fixed;
@@ -1322,15 +1507,98 @@
         <div class="topbar-title" id="topbar-title">Kiko PDF Reader</div>
       </div>
       <div class="topbar-right">
-        <button class="topbar-btn topbar-btn-ghost" id="feedback-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Feedback
-        </button>
-        <button class="topbar-btn topbar-btn-primary" id="upgrade-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
-          Upgrade
-        </button>
-        <div class="avatar" title="Jessica A.">J</div>
+        <nav id="glow-menu">
+          <div class="glow-nav-bg"></div>
+          <ul class="glow-nav-list">
+
+            <!-- Language — brand blue -->
+            <li class="glow-nav-item" id="lang-nav-item" style="--icon-color:#4A8FD4">
+              <button class="glow-nav-btn" id="language-btn">
+                <div class="glow-item-inner">
+                  <div class="glow-item-glow" style="background:radial-gradient(circle,rgba(74,143,212,.15) 0%,rgba(74,143,212,.06) 50%,rgba(74,143,212,0) 100%)"></div>
+                  <div class="glow-item-front">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                    <span class="glow-item-label" id="lang-label">Language</span>
+                  </div>
+                  <div class="glow-item-back">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                    <span class="glow-item-label">Language</span>
+                  </div>
+                </div>
+              </button>
+            </li>
+
+            <!-- Feedback — brand blue -->
+            <li class="glow-nav-item active" style="--icon-color:#4A8FD4">
+              <button class="glow-nav-btn" id="feedback-btn">
+                <div class="glow-item-inner">
+                  <div class="glow-item-glow" style="background:radial-gradient(circle,rgba(74,143,212,.15) 0%,rgba(74,143,212,.06) 50%,rgba(74,143,212,0) 100%)"></div>
+                  <div class="glow-item-front">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                    <span class="glow-item-label">Feedback</span>
+                  </div>
+                  <div class="glow-item-back">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                    <span class="glow-item-label">Feedback</span>
+                  </div>
+                </div>
+              </button>
+            </li>
+
+            <!-- Upgrade — brand pink/orange -->
+            <li class="glow-nav-item" style="--icon-color:#E8857A">
+              <button class="glow-nav-btn" id="upgrade-btn">
+                <div class="glow-item-inner">
+                  <div class="glow-item-glow" style="background:radial-gradient(circle,rgba(232,133,122,.15) 0%,rgba(232,133,122,.06) 50%,rgba(232,133,122,0) 100%)"></div>
+                  <div class="glow-item-front">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg></span>
+                    <span class="glow-item-label">Top-Up Token</span>
+                  </div>
+                  <div class="glow-item-back">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg></span>
+                    <span class="glow-item-label">Top-Up Token</span>
+                  </div>
+                </div>
+              </button>
+            </li>
+
+            <!-- Settings — brand green -->
+            <li class="glow-nav-item" style="--icon-color:#5C8A5B">
+              <button class="glow-nav-btn" id="settings-btn">
+                <div class="glow-item-inner">
+                  <div class="glow-item-glow" style="background:radial-gradient(circle,rgba(92,138,91,.15) 0%,rgba(92,138,91,.06) 50%,rgba(92,138,91,0) 100%)"></div>
+                  <div class="glow-item-front">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                    <span class="glow-item-label">Settings</span>
+                  </div>
+                  <div class="glow-item-back">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                    <span class="glow-item-label">Settings</span>
+                  </div>
+                </div>
+              </button>
+            </li>
+
+            <!-- Profile — brand navy -->
+            <li class="glow-nav-item" style="--icon-color:#1C2940">
+              <button class="glow-nav-btn" id="profile-btn">
+                <div class="glow-item-inner">
+                  <div class="glow-item-glow" style="background:radial-gradient(circle,rgba(28,41,64,.12) 0%,rgba(28,41,64,.05) 50%,rgba(28,41,64,0) 100%)"></div>
+                  <div class="glow-item-front">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                    <span class="glow-item-label">Profile</span>
+                  </div>
+                  <div class="glow-item-back">
+                    <span class="glow-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                    <span class="glow-item-label">Profile</span>
+                  </div>
+                </div>
+              </button>
+            </li>
+
+
+          </ul>
+        </nav>
       </div>
     </header>
 
@@ -1609,6 +1877,20 @@
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
+  <!-- LANGUAGE DROPDOWN (fixed, escapes overflow:hidden on #glow-menu) -->
+  <div id="lang-dropdown">
+    <button class="lang-option selected" data-lang="en">
+      <svg class="lang-flag-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>English</span>
+      <svg class="lang-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+    <button class="lang-option" data-lang="id">
+      <svg class="lang-flag-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>Bahasa Indonesia</span>
+      <svg class="lang-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+  </div>
+
   <!-- DYNAMIC ISLAND TOC -->
   <div id="toc-backdrop"></div>
   <div id="toc-wrapper">
@@ -1647,6 +1929,7 @@
 
   <script>
     // ── STATE ──────────────────────────────────────
+    var currentLanguage = 'en';
     let currentMode = 'summary';
     let summaryText = '';
     let utterance = null;
@@ -1752,8 +2035,8 @@
       setTimeout(() => {
         stepExtract.className   = 'p-step done';
         stepSummarize.className = 'p-step active';
-        document.getElementById('processing-title').textContent = 'Generating summary…';
-        document.getElementById('processing-sub').textContent = 'Gemini AI is reading and summarizing your document';
+        document.getElementById('processing-title').textContent = tr('procTitleSummarizing');
+        document.getElementById('processing-sub').textContent   = tr('procSubSummarizing');
       }, 1200);
 
       try {
@@ -2009,11 +2292,11 @@
         const hintEl    = document.getElementById('env-hint');
         if (data.apiKeySet) {
           statusEl.className = 'api-status ok';
-          textEl.textContent = 'Gemini API connected';
+          textEl.textContent = tr('apiConnected');
           hintEl.style.display = 'none';
         } else {
           statusEl.className = 'api-status missing';
-          textEl.textContent = 'API key not configured';
+          textEl.textContent = tr('apiMissing');
           hintEl.style.display = 'block';
         }
       } catch { /* server may not be ready */ }
@@ -2047,7 +2330,60 @@
 
     // ── TOPBAR BUTTONS ────────────────────────────
     document.getElementById('feedback-btn').addEventListener('click', () => showToast('Thanks for using Kiko! Feedback coming soon.', 'info'));
-    document.getElementById('upgrade-btn').addEventListener('click', () => showToast('Upgrade plans coming soon!', 'info'));
+    document.getElementById('upgrade-btn').addEventListener('click',  () => showToast('Upgrade plans coming soon!', 'info'));
+    document.getElementById('settings-btn').addEventListener('click', () => showToast('Settings coming soon.', 'info'));
+    document.getElementById('profile-btn').addEventListener('click',  () => showToast('Profile settings coming soon.', 'info'));
+
+    // ── GLOW MENU ACTIVE STATE ────────────────────
+    // Language item manages its own active class; skip it here
+    document.querySelectorAll('.glow-nav-item:not(#lang-nav-item)').forEach(function (item) {
+      item.querySelector('.glow-nav-btn').addEventListener('click', function () {
+        document.querySelectorAll('.glow-nav-item').forEach(function (i) { i.classList.remove('active'); });
+        item.classList.add('active');
+      });
+    });
+
+    // ── LANGUAGE DROPDOWN ─────────────────────────
+    ;(function () {
+      var langBtn    = document.getElementById('language-btn');
+      var langItem   = document.getElementById('lang-nav-item');
+      var dropdown   = document.getElementById('lang-dropdown');
+
+      function openDropdown() {
+        var rect = langBtn.getBoundingClientRect();
+        dropdown.style.top   = (rect.bottom + 6) + 'px';
+        dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+        dropdown.classList.add('open');
+        // deactivate other items, glow Language
+        document.querySelectorAll('.glow-nav-item').forEach(function (i) { i.classList.remove('active'); });
+        langItem.classList.add('active');
+      }
+
+      function closeDropdown() {
+        dropdown.classList.remove('open');
+        langItem.classList.remove('active');
+      }
+
+      langBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.classList.contains('open') ? closeDropdown() : openDropdown();
+      });
+
+      dropdown.querySelectorAll('.lang-option').forEach(function (opt) {
+        opt.addEventListener('click', function (e) {
+          e.stopPropagation();
+          dropdown.querySelectorAll('.lang-option').forEach(function (o) { o.classList.remove('selected'); });
+          opt.classList.add('selected');
+          closeDropdown();
+          currentLanguage = opt.dataset.lang;
+          applyTranslation();
+          var name = opt.dataset.lang === 'en' ? 'English' : 'Bahasa Indonesia';
+          showToast('Language set to ' + name, 'success');
+        });
+      });
+
+      document.addEventListener('click', function () { closeDropdown(); });
+    })();
 
     // ── INFINITE GRID REVEAL ──────────────────────
     ;(function () {
@@ -2113,21 +2449,21 @@
       const contentEl  = document.getElementById('lib-content');
 
       subtitleEl.textContent = history.length === 0
-        ? 'No documents yet'
-        : history.length + ' document' + (history.length !== 1 ? 's' : '') + ' processed';
+        ? tr('libSubEmpty')
+        : history.length + ' ' + (history.length !== 1 ? tr('libSubDocs') : tr('libSubDoc')) + ' ' + tr('libSubProcessed');
 
       statsEl.innerHTML =
         '<div class="lib-stat-card">' +
           '<div class="lib-stat-val">' + stats.count + '</div>' +
-          '<div class="lib-stat-lbl">Documents processed</div>' +
+          '<div class="lib-stat-lbl">' + tr('libStatDocs') + '</div>' +
         '</div>' +
         '<div class="lib-stat-card">' +
           '<div class="lib-stat-val">' + (stats.words >= 1000 ? (stats.words/1000).toFixed(1)+'k' : stats.words) + '</div>' +
-          '<div class="lib-stat-lbl">Words processed</div>' +
+          '<div class="lib-stat-lbl">' + tr('libStatWords') + '</div>' +
         '</div>' +
         '<div class="lib-stat-card">' +
           '<div class="lib-stat-val">' + (stats.time < 60 ? stats.time+' min' : Math.round(stats.time/60)+' hrs') + '</div>' +
-          '<div class="lib-stat-lbl">Reading time saved</div>' +
+          '<div class="lib-stat-lbl">' + tr('libStatTime') + '</div>' +
         '</div>';
 
       if (!history.length) {
@@ -2138,8 +2474,8 @@
                 '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' +
               '</svg>' +
             '</div>' +
-            '<h3>Your library is empty</h3>' +
-            '<p>Upload and summarize PDFs to add them here.</p>' +
+            '<h3>' + tr('libEmptyTitle') + '</h3>' +
+            '<p>' + tr('libEmptyDesc') + '</p>' +
           '</div>';
         return;
       }
@@ -2176,7 +2512,7 @@
               '</div>' +
               '<button class="lib-listen-btn idle" data-lib-index="' + i + '">' +
                 '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
-                ' Listen' +
+                tr('libListen') +
               '</button>' +
             '</div>' +
           '</div>' +
@@ -2214,7 +2550,7 @@
         card.classList.add('playing');
         var btn = card.querySelector('.lib-listen-btn');
         btn.className = 'lib-listen-btn stop';
-        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Stop';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>' + tr('libStop');
       }
 
       libUtterance = new SpeechSynthesisUtterance(item.summary);
@@ -2234,12 +2570,196 @@
           var btn = card.querySelector('.lib-listen-btn');
           if (btn) {
             btn.className = 'lib-listen-btn idle';
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Listen';
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' + tr('libListen');
           }
         }
       }
       libPlayingIndex = null;
       libUtterance    = null;
+    }
+
+    // ── INTERNATIONALISATION ──────────────────────
+    var i18n = {
+      en: {
+        pageTitle:'Kiko PDF Reader', pageLibrary:'Audio Library',
+        tooltipHome:'Home', tooltipAudio:'Audio Library', tooltipSettings:'Settings',
+        menuLang:'Language', menuFeedback:'Feedback', menuUpgrade:'Top-Up Token',
+        menuSettings:'Settings', menuProfile:'Profile',
+        greetMorning:'Good morning! Ready to learn something new?',
+        greetAfternoon:"Good afternoon! Drop a PDF and I'll read it for you.",
+        greetEvening:"Good evening! Let's make the most of your time.",
+        greetSub:"Upload any PDF and I'll read it to you with an audio summary powered by Gemini AI.",
+        sectionUpload:'Upload PDF',
+        modeQuick:'Quick Summary', modeDetailed:'Detailed',
+        dropTitle:'Drop your PDF here',
+        dropSub:'or click anywhere in this box to browse',
+        browseBtnText:'Choose PDF',
+        procTitle:'Reading your document…',
+        procSub:'Extracting text and generating your summary',
+        procTitleSummarizing:'Generating summary…',
+        procSubSummarizing:'Gemini AI is reading and summarizing your document',
+        stepExtract:'Extracting', stepSummarize:'Summarizing', stepReady:'Ready',
+        summaryLabel:'AI Summary', copyBtn:' Copy',
+        audioHeader:'Audio Playback', speedLabel:'Speed', voiceLabel:'Voice',
+        newUpload:' Upload another PDF',
+        errorTitle:'Something went wrong',
+        sectionRecent:'Recent Documents', clearAll:'Clear all',
+        recentEmpty:'Your recently summarized PDFs will appear here',
+        apiTitle:'API Status',
+        apiDesc:'Kiko uses Gemini 1.5 Flash to understand and summarize your documents.',
+        apiChecking:'Checking…', apiConnected:'Gemini API connected', apiMissing:'API key not configured',
+        tipsTitle:' How to use',
+        tip1:'Upload any PDF — research papers, reports, books, contracts',
+        tip2:'Choose Quick Summary or Detailed for a deeper breakdown',
+        tip3:'Hit play and listen — adjust speed and voice to your liking',
+        tip4:'Copy the summary text or re-upload a new document anytime',
+        statsTitle:'Session Stats',
+        statPDFs:'PDFs summarized', statWords:'Words processed', statTime:'Time saved',
+        libTitle:'Audio Library', libSubEmpty:'No documents yet',
+        libSubDoc:'document', libSubDocs:'documents', libSubProcessed:'processed',
+        libStatDocs:'Documents processed', libStatWords:'Words processed', libStatTime:'Reading time saved',
+        libClearAll:' Clear all', libListen:' Listen', libStop:' Stop',
+        libEmptyTitle:'Your library is empty',
+        libEmptyDesc:'Upload and summarize PDFs to add them here.',
+        toastLoaded:'Loaded from history', toastFinished:'Finished playing',
+        tocTitle:'Table of Contents',
+        tocHome:'Quick Actions', tocUpload:'Upload PDF', tocRecent:'Recent Documents',
+      },
+      id: {
+        pageTitle:'Kiko Pembaca PDF', pageLibrary:'Pustaka Audio',
+        tooltipHome:'Beranda', tooltipAudio:'Pustaka Audio', tooltipSettings:'Pengaturan',
+        menuLang:'Bahasa', menuFeedback:'Umpan Balik', menuUpgrade:'Tingkatkan',
+        menuSettings:'Pengaturan', menuProfile:'Profil',
+        greetMorning:'Selamat pagi! Siap belajar hal baru?',
+        greetAfternoon:'Selamat siang! Unggah PDF dan saya akan membacakannya.',
+        greetEvening:'Selamat malam! Mari manfaatkan waktu Anda.',
+        greetSub:'Unggah PDF apa saja dan saya akan membacakannya dengan ringkasan audio bertenaga Gemini AI.',
+        sectionUpload:'Unggah PDF',
+        modeQuick:'Ringkasan Cepat', modeDetailed:'Terperinci',
+        dropTitle:'Letakkan PDF Anda di sini',
+        dropSub:'atau klik di mana saja untuk menelusuri',
+        browseBtnText:'Pilih PDF',
+        procTitle:'Membaca dokumen Anda…',
+        procSub:'Mengekstrak teks dan membuat ringkasan',
+        procTitleSummarizing:'Membuat ringkasan…',
+        procSubSummarizing:'Gemini AI sedang membaca dan meringkas dokumen Anda',
+        stepExtract:'Mengekstrak', stepSummarize:'Meringkas', stepReady:'Siap',
+        summaryLabel:'Ringkasan AI', copyBtn:' Salin',
+        audioHeader:'Pemutaran Audio', speedLabel:'Kecepatan', voiceLabel:'Suara',
+        newUpload:' Unggah PDF lain',
+        errorTitle:'Terjadi kesalahan',
+        sectionRecent:'Dokumen Terkini', clearAll:'Hapus semua',
+        recentEmpty:'PDF yang baru diringkas akan muncul di sini',
+        apiTitle:'Status API',
+        apiDesc:'Kiko menggunakan Gemini 1.5 Flash untuk memahami dan meringkas dokumen Anda.',
+        apiChecking:'Memeriksa…', apiConnected:'API Gemini terhubung', apiMissing:'Kunci API belum dikonfigurasi',
+        tipsTitle:' Cara penggunaan',
+        tip1:'Unggah PDF apa saja — makalah, laporan, buku, kontrak',
+        tip2:'Pilih Ringkasan Cepat atau Terperinci untuk analisis lebih mendalam',
+        tip3:'Tekan putar dan dengarkan — sesuaikan kecepatan dan suara sesuai selera',
+        tip4:'Salin teks ringkasan atau unggah dokumen baru kapan saja',
+        statsTitle:'Statistik Sesi',
+        statPDFs:'PDF diringkas', statWords:'Kata diproses', statTime:'Waktu dihemat',
+        libTitle:'Pustaka Audio', libSubEmpty:'Belum ada dokumen',
+        libSubDoc:'dokumen', libSubDocs:'dokumen', libSubProcessed:'diproses',
+        libStatDocs:'Dokumen diproses', libStatWords:'Kata diproses', libStatTime:'Waktu membaca dihemat',
+        libClearAll:' Hapus semua', libListen:' Dengarkan', libStop:' Berhenti',
+        libEmptyTitle:'Pustaka Anda kosong',
+        libEmptyDesc:'Unggah dan ringkas PDF untuk menambahkannya di sini.',
+        toastLoaded:'Dimuat dari riwayat', toastFinished:'Selesai diputar',
+        tocTitle:'Daftar Isi',
+        tocHome:'Tindakan Cepat', tocUpload:'Unggah PDF', tocRecent:'Dokumen Terkini',
+      }
+    };
+
+    function tr(key) { return (i18n[currentLanguage] || i18n.en)[key] || key; }
+
+    // Update the last text node of el (preserves child SVGs/elements)
+    function setTxtNode(el, text) {
+      if (!el) return;
+      for (var i = el.childNodes.length - 1; i >= 0; i--) {
+        if (el.childNodes[i].nodeType === 3) { el.childNodes[i].nodeValue = text; return; }
+      }
+      el.appendChild(document.createTextNode(text));
+    }
+
+    function applyTranslation() {
+      function q(s) { return document.querySelector(s); }
+      function qa(s) { return document.querySelectorAll(s); }
+      function tid(id, key) { var e = document.getElementById(id); if (e) e.textContent = tr(key); }
+
+      // Page title
+      topbarTitle.textContent = libraryPageEl.classList.contains('show') ? tr('pageLibrary') : tr('pageTitle');
+
+      // Greeting
+      var hour = new Date().getHours();
+      tid('greeting-msg', hour < 12 ? 'greetMorning' : hour < 17 ? 'greetAfternoon' : 'greetEvening');
+      var gp = q('.greeting-text p'); if (gp) gp.textContent = tr('greetSub');
+
+      // Sidebar tooltips
+      var ht = q('#home-nav .tooltip');    if (ht) ht.textContent = tr('tooltipHome');
+      var lt = q('#library-nav .tooltip'); if (lt) lt.textContent = tr('tooltipAudio');
+      var st = q('.sidebar .nav-item:last-child .tooltip'); if (st) st.textContent = tr('tooltipSettings');
+
+      // Glow menu labels (front + back faces)
+      [['language-btn','menuLang'],['feedback-btn','menuFeedback'],['upgrade-btn','menuUpgrade'],
+       ['settings-btn','menuSettings'],['profile-btn','menuProfile']].forEach(function(pair) {
+        qa('#' + pair[0] + ' .glow-item-label').forEach(function(el) { el.textContent = tr(pair[1]); });
+      });
+
+      // Upload section title, mode buttons, drop zone
+      setTxtNode(q('.upload-header .section-title'), ' ' + tr('sectionUpload'));
+      var bq = q('.mode-btn[data-mode="summary"]'); if (bq) bq.textContent = tr('modeQuick');
+      var bd = q('.mode-btn[data-mode="detailed"]'); if (bd) bd.textContent = tr('modeDetailed');
+      var dh = q('.drop-zone h3'); if (dh) dh.textContent = tr('dropTitle');
+      var dp = q('.drop-zone p');  if (dp) dp.textContent = tr('dropSub');
+      setTxtNode(q('.browse-btn'), ' ' + tr('browseBtnText'));
+
+      // Processing defaults
+      tid('processing-title', 'procTitle');
+      tid('processing-sub',   'procSub');
+      setTxtNode(document.getElementById('step-extract'),   ' ' + tr('stepExtract'));
+      setTxtNode(document.getElementById('step-summarize'), ' ' + tr('stepSummarize'));
+      setTxtNode(document.getElementById('step-ready'),     ' ' + tr('stepReady'));
+
+      // Result panel
+      var sl = q('.summary-label'); if (sl) sl.textContent = tr('summaryLabel');
+      setTxtNode(document.getElementById('copy-btn'), tr('copyBtn'));
+      var ah = q('.audio-header > span'); if (ah) ah.textContent = tr('audioHeader');
+      qa('.setting-label').forEach(function(el, i) { el.textContent = i === 0 ? tr('speedLabel') : tr('voiceLabel'); });
+      setTxtNode(document.getElementById('new-upload-btn'), tr('newUpload'));
+
+      // Error + recent section
+      var et = q('.error-title'); if (et) et.textContent = tr('errorTitle');
+      setTxtNode(q('.recent-header .section-title'), ' ' + tr('sectionRecent'));
+      tid('clear-history-btn', 'clearAll');
+      var re = q('.recent-empty p'); if (re) re.textContent = tr('recentEmpty');
+
+      // API card
+      var at = q('.api-card h3'); if (at) at.textContent = tr('apiTitle');
+      var ad = q('.api-card > p'); if (ad) ad.textContent = tr('apiDesc');
+      checkHealth();
+
+      // Tips
+      setTxtNode(q('.tips-card h3'), tr('tipsTitle'));
+      qa('.tip-text').forEach(function(el, i) { el.textContent = tr('tip' + (i + 1)); });
+
+      // Stats
+      var sc = q('.stats-card h3'); if (sc) sc.textContent = tr('statsTitle');
+      qa('.stat-name').forEach(function(el, i) {
+        el.textContent = [tr('statPDFs'), tr('statWords'), tr('statTime')][i] || el.textContent;
+      });
+
+      // Library page
+      var ltt = q('.lib-title'); if (ltt) ltt.textContent = tr('libTitle');
+      setTxtNode(document.getElementById('lib-clear-btn'), tr('libClearAll'));
+      if (libraryPageEl.classList.contains('show')) renderLibrary();
+
+      // TOC data attributes (pill reads these on next scroll-spy update)
+      var sh = document.getElementById('section-home');   if (sh) sh.setAttribute('data-toc-title', tr('tocHome'));
+      var su = document.getElementById('section-upload'); if (su) su.setAttribute('data-toc-title', tr('tocUpload'));
+      var sr = document.getElementById('recent');         if (sr) sr.setAttribute('data-toc-title', tr('tocRecent'));
+      var te = q('.toc-exp-label'); if (te) te.textContent = tr('tocTitle');
     }
 
     // ── INIT ──────────────────────────────────────
