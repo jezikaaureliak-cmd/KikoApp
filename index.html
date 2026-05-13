@@ -18,6 +18,7 @@
       --blue-bg:    #EBF4FF;
       --green:      #22C55E;
       --green-bg:   #F0FDF4;
+      --pink:       #E8857A;
       --amber:      #F59E0B;
       --amber-bg:   #FFFBEB;
       --red:        #EF4444;
@@ -289,7 +290,21 @@
     }
     .section-title svg { color: var(--blue); }
 
-    .mode-toggle {
+    /* ── OUTPUT PREVIEW SECTION ──────────────────── */
+    .preview-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .preview-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .prev-toggle {
       display: flex;
       gap: 4px;
       background: var(--surface);
@@ -297,23 +312,93 @@
       border-radius: 8px;
       border: 1px solid var(--border);
     }
-    .mode-btn {
-      padding: 5px 12px;
+    .prev-btn {
+      padding: 5px 14px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 500;
       border: none;
       cursor: pointer;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Poppins', 'Inter', sans-serif;
       color: var(--muted);
       background: transparent;
       transition: all .15s;
+      white-space: nowrap;
     }
-    .mode-btn.active {
+    .prev-btn.active {
       background: var(--white);
       color: var(--text);
       box-shadow: 0 1px 3px rgba(28,41,64,.1);
     }
+    .preview-panel { padding: 20px 24px 24px; }
+    .preview-panel[hidden] { display: none; }
+
+    /* Mindmap */
+    .mm-svg { width: 100%; height: auto; display: block; }
+    .mm-node {
+      opacity: 0;
+      animation: mm-pop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .mm-line {
+      opacity: 0;
+      animation: mm-fade 0.4s ease forwards;
+    }
+    @keyframes mm-pop {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes mm-fade { to { opacity: 1; } }
+
+    /* Mock summary */
+    .mock-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 14px;
+    }
+    .mock-bullet {
+      display: flex;
+      gap: 11px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+    .mock-bullet:last-of-type { border-bottom: none; }
+    .mock-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .mock-line {
+      height: 11px;
+      border-radius: 6px;
+      background: var(--surface);
+      margin-bottom: 6px;
+    }
+    .mock-line:last-child { margin-bottom: 0; }
+    .mock-sentence {
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .mock-insight {
+      margin-top: 14px;
+      background: var(--blue-bg);
+      border-left: 3px solid var(--blue);
+      border-radius: 0 8px 8px 0;
+      padding: 11px 14px;
+      font-size: 11.5px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .mock-insight strong { color: var(--blue); }
 
     .drop-zone {
       margin: 20px 24px 24px;
@@ -787,6 +872,34 @@
       color: var(--muted);
       margin-bottom: 14px;
       line-height: 1.5;
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      color: var(--muted);
+      background: transparent;
+      transition: all .15s;
+      text-align: center;
+    }
+    .mode-btn.active {
+      background: var(--white);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(28,41,64,.1);
     }
 
     .api-status {
@@ -1626,10 +1739,6 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Upload PDF
             </div>
-            <div class="mode-toggle">
-              <button class="mode-btn active" data-mode="summary">Quick Summary</button>
-              <button class="mode-btn" data-mode="detailed">Detailed</button>
-            </div>
           </div>
 
           <!-- DROP ZONE -->
@@ -1687,7 +1796,6 @@
                 <div class="doc-meta">
                   <span class="doc-badge" id="doc-pages">0 pages</span>
                   <span class="doc-badge" id="doc-words">0 words</span>
-                  <span class="doc-badge" id="doc-mode">Summary</span>
                 </div>
               </div>
               <button class="doc-reset" id="doc-reset" title="Upload a new PDF">
@@ -1766,6 +1874,106 @@
           </div>
         </div>
 
+        <!-- OUTPUT PREVIEW -->
+        <div class="preview-section" id="section-preview" data-toc data-toc-depth="2" data-toc-title="Output Preview">
+          <div class="preview-header">
+            <div class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Output Preview
+            </div>
+            <div class="prev-toggle">
+              <button class="prev-btn active" data-prev="mindmap">Mindmap</button>
+              <button class="prev-btn" data-prev="summary">Quick Summary</button>
+            </div>
+          </div>
+
+          <!-- MINDMAP PANEL -->
+          <div class="preview-panel" id="prev-mindmap">
+            <svg class="mm-svg" viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="mm-shadow" x="-25%" y="-25%" width="150%" height="150%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#1C2940" flood-opacity="0.12"/>
+                </filter>
+              </defs>
+
+              <!-- Connection lines -->
+              <path class="mm-line" d="M280,126 Q280,92 280,58" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round" style="animation-delay:.05s"/>
+              <path class="mm-line" d="M332,138 Q366,110 400,82" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round" style="animation-delay:.12s"/>
+              <path class="mm-line" d="M332,158 Q366,184 400,210" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round" style="animation-delay:.19s"/>
+              <path class="mm-line" d="M228,158 Q194,184 160,210" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round" style="animation-delay:.26s"/>
+              <path class="mm-line" d="M228,138 Q194,110 160,82" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round" style="animation-delay:.33s"/>
+
+              <!-- Center node -->
+              <g class="mm-node" style="transform-origin:280px 148px; animation-delay:0s">
+                <rect x="228" y="126" width="104" height="44" rx="13" fill="#1C2940" filter="url(#mm-shadow)"/>
+                <text x="280" y="148" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="12" font-weight="700">Your PDF</text>
+              </g>
+
+              <!-- Top — Overview -->
+              <g class="mm-node" style="transform-origin:280px 40px; animation-delay:.1s">
+                <rect x="232" y="22" width="96" height="36" rx="10" fill="#4A8FD4" filter="url(#mm-shadow)"/>
+                <text x="280" y="40" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="11" font-weight="600">Overview</text>
+              </g>
+
+              <!-- Top-right — Key Points -->
+              <g class="mm-node" style="transform-origin:460px 82px; animation-delay:.18s">
+                <rect x="400" y="64" width="120" height="36" rx="10" fill="#5C8A5B" filter="url(#mm-shadow)"/>
+                <text x="460" y="82" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="11" font-weight="600">Key Points</text>
+              </g>
+
+              <!-- Bottom-right — Insights -->
+              <g class="mm-node" style="transform-origin:460px 210px; animation-delay:.26s">
+                <rect x="400" y="192" width="120" height="36" rx="10" fill="#E8857A" filter="url(#mm-shadow)"/>
+                <text x="460" y="210" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="11" font-weight="600">Insights</text>
+              </g>
+
+              <!-- Bottom-left — Data & Facts -->
+              <g class="mm-node" style="transform-origin:100px 210px; animation-delay:.34s">
+                <rect x="40" y="192" width="120" height="36" rx="10" fill="#4A8FD4" filter="url(#mm-shadow)"/>
+                <text x="100" y="210" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="11" font-weight="600">Data &amp; Facts</text>
+              </g>
+
+              <!-- Top-left — Context -->
+              <g class="mm-node" style="transform-origin:100px 82px; animation-delay:.42s">
+                <rect x="40" y="64" width="120" height="36" rx="10" fill="#5C8A5B" filter="url(#mm-shadow)"/>
+                <text x="100" y="82" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="11" font-weight="600">Context</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- QUICK SUMMARY PANEL -->
+          <div class="preview-panel" id="prev-summary" hidden>
+            <div class="mock-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              AI Summary
+            </div>
+            <div class="mock-bullet">
+              <div class="mock-dot" style="background:var(--blue)"></div>
+              <div style="flex:1">
+                <div class="mock-line" style="width:91%"></div>
+                <div class="mock-line" style="width:72%"></div>
+              </div>
+            </div>
+            <div class="mock-bullet">
+              <div class="mock-dot" style="background:#5C8A5B"></div>
+              <div style="flex:1">
+                <div class="mock-line" style="width:84%"></div>
+                <div class="mock-line" style="width:58%"></div>
+              </div>
+            </div>
+            <div class="mock-bullet">
+              <div class="mock-dot" style="background:var(--pink)"></div>
+              <div style="flex:1">
+                <div class="mock-line" style="width:87%"></div>
+                <div class="mock-line" style="width:64%"></div>
+              </div>
+            </div>
+            <div class="mock-insight">
+              <strong>Key Insight</strong> — The document highlights three core arguments supported by empirical data, offering a structured framework for understanding the topic at hand.
+            </div>
+          </div>
+        </div>
+
         <!-- RECENT DOCS -->
         <div class="recent-section" id="recent" data-toc data-toc-depth="2" data-toc-title="Recent Documents">
           <div class="recent-header">
@@ -1787,17 +1995,13 @@
       <!-- RIGHT COLUMN -->
       <div class="right-col">
 
-        <!-- API STATUS -->
+        <!-- OUTPUT MODE -->
         <div class="api-card">
-          <h3>API Status</h3>
-          <p>Kiko uses Gemini 1.5 Flash to understand and summarize your documents.</p>
-          <div class="api-status missing" id="api-status">
-            <div class="api-status-dot"></div>
-            <span id="api-status-text">Checking…</span>
-          </div>
-          <div class="env-hint" id="env-hint" style="display:none">
-            Add to your <strong>.env</strong>:<br>
-            <code>GEMINI_API_KEY=AIza…</code>
+          <h3>Output Mode</h3>
+          <p>Choose what Kiko generates from your PDF.</p>
+          <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="mindmap">Mindmap</button>
+            <button class="mode-btn" data-mode="summary">Quick Summary</button>
           </div>
         </div>
 
@@ -1813,14 +2017,10 @@
           </div>
           <div class="tip-item">
             <div class="tip-num">2</div>
-            <div class="tip-text">Choose Quick Summary or Detailed for a deeper breakdown</div>
-          </div>
-          <div class="tip-item">
-            <div class="tip-num">3</div>
             <div class="tip-text">Hit play and listen — adjust speed and voice to your liking</div>
           </div>
           <div class="tip-item">
-            <div class="tip-num">4</div>
+            <div class="tip-num">3</div>
             <div class="tip-text">Copy the summary text or re-upload a new document anytime</div>
           </div>
         </div>
@@ -1930,7 +2130,7 @@
   <script>
     // ── STATE ──────────────────────────────────────
     var currentLanguage = 'en';
-    let currentMode = 'summary';
+    let currentMode = 'mindmap';
     let summaryText = '';
     let utterance = null;
     let isPlaying = false;
@@ -1972,15 +2172,6 @@
                      hour < 17 ? 'Good afternoon! Drop a PDF and I\'ll read it for you.' :
                                  'Good evening! Let\'s make the most of your time.';
     document.getElementById('greeting-msg').textContent = greetMsg;
-
-    // ── MODE TOGGLE ────────────────────────────────
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentMode = btn.dataset.mode;
-      });
-    });
 
     // ── VOICES ────────────────────────────────────
     function loadVoices() {
@@ -2069,8 +2260,12 @@
       document.getElementById('doc-filename').textContent = data.filename || filename;
       document.getElementById('doc-pages').textContent = `${data.pageCount} page${data.pageCount !== 1 ? 's' : ''}`;
       document.getElementById('doc-words').textContent = `${data.wordCount.toLocaleString()} words`;
-      document.getElementById('doc-mode').textContent = data.mode === 'detailed' ? 'Detailed' : 'Summary';
       summaryEl.textContent = data.summary;
+
+      // Populate preview panels with real data (set visibility first so animations fire correctly)
+      setMode(currentMode);
+      if (data.mindmap) renderMindmapPreview(data.mindmap);
+      renderSummaryPreview(data.summary);
 
       // Update stats
       stats.count++;
@@ -2087,6 +2282,71 @@
 
       showState('result');
       showToast('Summary ready! Press play to listen.', 'success');
+    }
+
+    function buildMindmapSVG(data) {
+      const colors = ['#4A8FD4', '#5C8A5B', '#E8857A', '#4A8FD4', '#5C8A5B'];
+      const cx = 280, cy = 140, r = 110;
+      const nodes = (data.nodes || []).slice(0, 6);
+      const N = nodes.length || 5;
+      function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+      let paths = '', groups = '';
+      nodes.forEach((node, i) => {
+        const angle = (-90 + (360 / N * i)) * (Math.PI / 180);
+        const nx = cx + r * Math.cos(angle);
+        const ny = cy + r * Math.sin(angle);
+        const color = colors[i % colors.length];
+        const label = esc(node.label || '');
+        const w = Math.min(Math.max(70, label.length * 7.5 + 24), 130);
+        paths += `<path class="mm-line" d="M${cx},${cy} L${nx.toFixed(1)},${ny.toFixed(1)}" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round" style="animation-delay:${(0.05 + i * 0.09).toFixed(2)}s"/>`;
+        groups += `<g class="mm-node" style="transform-origin:${nx.toFixed(1)}px ${ny.toFixed(1)}px;animation-delay:${(0.1 + i * 0.09).toFixed(2)}s">
+          <rect x="${(nx - w/2).toFixed(1)}" y="${(ny - 18).toFixed(1)}" width="${w}" height="36" rx="10" fill="${color}" filter="url(#mm-shadow)"/>
+          <text x="${nx.toFixed(1)}" y="${ny.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="11" font-weight="600">${label}</text>
+        </g>`;
+      });
+
+      const centerLabel = esc(data.center || 'Your PDF');
+      const cw = Math.min(Math.max(90, centerLabel.length * 8.5 + 24), 145);
+      return `<svg class="mm-svg" viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
+        <defs><filter id="mm-shadow" x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#1C2940" flood-opacity="0.12"/>
+        </filter></defs>
+        ${paths}
+        <g class="mm-node" style="transform-origin:${cx}px ${cy}px;animation-delay:0s">
+          <rect x="${cx - cw/2}" y="${cy - 22}" width="${cw}" height="44" rx="13" fill="#1C2940" filter="url(#mm-shadow)"/>
+          <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="Poppins,sans-serif" font-size="12" font-weight="700">${centerLabel}</text>
+        </g>
+        ${groups}
+      </svg>`;
+    }
+
+    function renderMindmapPreview(mmData) {
+      const el = document.getElementById('prev-mindmap');
+      if (el) el.innerHTML = buildMindmapSVG(mmData);
+    }
+
+    function renderSummaryPreview(text) {
+      const el = document.getElementById('prev-summary');
+      if (!el) return;
+      const dotColors = ['var(--blue)', '#5C8A5B', 'var(--pink)'];
+      const sentences = (text.match(/[^.!?]+[.!?]+/g) || [text]).filter(s => s.trim().length > 10);
+      const main = sentences.slice(0, 3);
+      const insight = sentences.length > 3 ? sentences[sentences.length - 1].trim() : '';
+      let html = `<div class="mock-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        AI Summary
+      </div>`;
+      main.forEach((s, i) => {
+        html += `<div class="mock-bullet">
+          <div class="mock-dot" style="background:${dotColors[i % dotColors.length]}"></div>
+          <div class="mock-sentence">${s.trim()}</div>
+        </div>`;
+      });
+      if (insight) {
+        html += `<div class="mock-insight"><strong>${tr('prevInsight')}</strong> — ${insight}</div>`;
+      }
+      el.innerHTML = html;
     }
 
     function showError(msg) {
@@ -2282,25 +2542,25 @@
       statTime.textContent = stats.time < 60 ? stats.time + ' min' : Math.round(stats.time / 60) + ' hrs';
     }
 
-    // ── API HEALTH CHECK ──────────────────────────
-    async function checkHealth() {
-      try {
-        const res = await fetch('/api/health');
-        const data = await res.json();
-        const statusEl  = document.getElementById('api-status');
-        const textEl    = document.getElementById('api-status-text');
-        const hintEl    = document.getElementById('env-hint');
-        if (data.apiKeySet) {
-          statusEl.className = 'api-status ok';
-          textEl.textContent = tr('apiConnected');
-          hintEl.style.display = 'none';
-        } else {
-          statusEl.className = 'api-status missing';
-          textEl.textContent = tr('apiMissing');
-          hintEl.style.display = 'block';
-        }
-      } catch { /* server may not be ready */ }
+    // ── MODE TOGGLE (synced with preview) ─────────
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      document.querySelectorAll('.prev-btn').forEach(b => b.classList.toggle('active', b.dataset.prev === mode));
+      const mmEl = document.getElementById('prev-mindmap');
+      const smEl = document.getElementById('prev-summary');
+      if (mmEl) mmEl.hidden = mode !== 'mindmap';
+      if (smEl) smEl.hidden = mode !== 'summary';
+      if (mode === 'mindmap' && mmEl) {
+        mmEl.querySelectorAll('.mm-node, .mm-line').forEach(el => {
+          el.style.animation = 'none';
+          void el.offsetWidth;
+          el.style.animation = '';
+        });
+      }
     }
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+    document.querySelectorAll('.prev-btn').forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.prev)));
 
     // ── TOAST ─────────────────────────────────────
     function showToast(msg, type = 'info') {
@@ -2430,6 +2690,8 @@
         homeNavEl.classList.add('active');
         stopLibraryAudio();
       }
+      var tocQA = document.querySelector('#toc-list [data-toc-id="section-home"]');
+      if (tocQA) tocQA.style.display = page === 'library' ? 'none' : '';
     }
 
     homeNavEl.addEventListener('click',    e => { e.preventDefault(); switchPage('main'); });
@@ -2590,7 +2852,6 @@
         greetEvening:"Good evening! Let's make the most of your time.",
         greetSub:"Upload any PDF and I'll read it to you with an audio summary powered by Gemini AI.",
         sectionUpload:'Upload PDF',
-        modeQuick:'Quick Summary', modeDetailed:'Detailed',
         dropTitle:'Drop your PDF here',
         dropSub:'or click anywhere in this box to browse',
         browseBtnText:'Choose PDF',
@@ -2605,14 +2866,16 @@
         errorTitle:'Something went wrong',
         sectionRecent:'Recent Documents', clearAll:'Clear all',
         recentEmpty:'Your recently summarized PDFs will appear here',
-        apiTitle:'API Status',
-        apiDesc:'Kiko uses Gemini 1.5 Flash to understand and summarize your documents.',
-        apiChecking:'Checking…', apiConnected:'Gemini API connected', apiMissing:'API key not configured',
+        apiTitle:'Output Mode',
+        apiDesc:'Choose what Kiko generates from your PDF.',
+        modeMindmap:'Mindmap', modeSummary:'Quick Summary',
+        previewTitle:'Output Preview',
+        prevMindmap:'Mindmap', prevSummary:'Quick Summary',
+        prevInsight:'Key Insight',
         tipsTitle:' How to use',
         tip1:'Upload any PDF — research papers, reports, books, contracts',
-        tip2:'Choose Quick Summary or Detailed for a deeper breakdown',
-        tip3:'Hit play and listen — adjust speed and voice to your liking',
-        tip4:'Copy the summary text or re-upload a new document anytime',
+        tip2:'Hit play and listen — adjust speed and voice to your liking',
+        tip3:'Copy the summary text or re-upload a new document anytime',
         statsTitle:'Session Stats',
         statPDFs:'PDFs summarized', statWords:'Words processed', statTime:'Time saved',
         libTitle:'Audio Library', libSubEmpty:'No documents yet',
@@ -2635,7 +2898,6 @@
         greetEvening:'Selamat malam! Mari manfaatkan waktu Anda.',
         greetSub:'Unggah PDF apa saja dan saya akan membacakannya dengan ringkasan audio bertenaga Gemini AI.',
         sectionUpload:'Unggah PDF',
-        modeQuick:'Ringkasan Cepat', modeDetailed:'Terperinci',
         dropTitle:'Letakkan PDF Anda di sini',
         dropSub:'atau klik di mana saja untuk menelusuri',
         browseBtnText:'Pilih PDF',
@@ -2650,14 +2912,16 @@
         errorTitle:'Terjadi kesalahan',
         sectionRecent:'Dokumen Terkini', clearAll:'Hapus semua',
         recentEmpty:'PDF yang baru diringkas akan muncul di sini',
-        apiTitle:'Status API',
-        apiDesc:'Kiko menggunakan Gemini 1.5 Flash untuk memahami dan meringkas dokumen Anda.',
-        apiChecking:'Memeriksa…', apiConnected:'API Gemini terhubung', apiMissing:'Kunci API belum dikonfigurasi',
+        apiTitle:'Mode Output',
+        apiDesc:'Pilih apa yang Kiko hasilkan dari PDF Anda.',
+        modeMindmap:'Mindmap', modeSummary:'Ringkasan Cepat',
+        previewTitle:'Pratinjau Output',
+        prevMindmap:'Mindmap', prevSummary:'Ringkasan Cepat',
+        prevInsight:'Insight Utama',
         tipsTitle:' Cara penggunaan',
         tip1:'Unggah PDF apa saja — makalah, laporan, buku, kontrak',
-        tip2:'Pilih Ringkasan Cepat atau Terperinci untuk analisis lebih mendalam',
-        tip3:'Tekan putar dan dengarkan — sesuaikan kecepatan dan suara sesuai selera',
-        tip4:'Salin teks ringkasan atau unggah dokumen baru kapan saja',
+        tip2:'Tekan putar dan dengarkan — sesuaikan kecepatan dan suara sesuai selera',
+        tip3:'Salin teks ringkasan atau unggah dokumen baru kapan saja',
         statsTitle:'Statistik Sesi',
         statPDFs:'PDF diringkas', statWords:'Kata diproses', statTime:'Waktu dihemat',
         libTitle:'Pustaka Audio', libSubEmpty:'Belum ada dokumen',
@@ -2707,10 +2971,8 @@
         qa('#' + pair[0] + ' .glow-item-label').forEach(function(el) { el.textContent = tr(pair[1]); });
       });
 
-      // Upload section title, mode buttons, drop zone
+      // Upload section title, drop zone
       setTxtNode(q('.upload-header .section-title'), ' ' + tr('sectionUpload'));
-      var bq = q('.mode-btn[data-mode="summary"]'); if (bq) bq.textContent = tr('modeQuick');
-      var bd = q('.mode-btn[data-mode="detailed"]'); if (bd) bd.textContent = tr('modeDetailed');
       var dh = q('.drop-zone h3'); if (dh) dh.textContent = tr('dropTitle');
       var dp = q('.drop-zone p');  if (dp) dp.textContent = tr('dropSub');
       setTxtNode(q('.browse-btn'), ' ' + tr('browseBtnText'));
@@ -2735,10 +2997,16 @@
       tid('clear-history-btn', 'clearAll');
       var re = q('.recent-empty p'); if (re) re.textContent = tr('recentEmpty');
 
-      // API card
+      // Mode toggle card
       var at = q('.api-card h3'); if (at) at.textContent = tr('apiTitle');
       var ad = q('.api-card > p'); if (ad) ad.textContent = tr('apiDesc');
-      checkHealth();
+      var bm = q('.mode-btn[data-mode="mindmap"]'); if (bm) bm.textContent = tr('modeMindmap');
+      var bs = q('.mode-btn[data-mode="summary"]'); if (bs) bs.textContent = tr('modeSummary');
+
+      // Preview section
+      var ph = q('.preview-section .section-title'); if (ph) setTxtNode(ph, ' ' + tr('previewTitle'));
+      var pm = q('.prev-btn[data-prev="mindmap"]'); if (pm) pm.textContent = tr('prevMindmap');
+      var ps = q('.prev-btn[data-prev="summary"]'); if (ps) ps.textContent = tr('prevSummary');
 
       // Tips
       setTxtNode(q('.tips-card h3'), tr('tipsTitle'));

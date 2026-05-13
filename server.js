@@ -40,43 +40,50 @@ app.post('/api/summarize', upload.single('pdf'), async (req, res) => {
     const truncated = rawText.length > 60000 ? rawText.slice(0, 60000) + '\n\n[Document continues — summarizing the above portion]' : rawText;
 
     const mode = req.body.mode || 'summary';
-    let prompt;
 
-    if (mode === 'detailed') {
-      prompt = `You are an expert at explaining complex documents in a clear, engaging way.
+    const prompt = `Analyze this document and return a JSON object with two outputs.
 
-Read this document and provide a detailed audio-friendly explanation. Structure it as:
-- An engaging opening that explains what this document is about and why it matters (2-3 sentences)
-- A thorough breakdown of the main sections or topics (5-8 key points, each 2-3 sentences)
-- Important details, data, or findings worth noting
-- A strong conclusion summarizing the key takeaways
+1. "summary": A concise, audio-friendly summary in 3-5 flowing sentences covering the document's key points. Write as natural prose — no bullet points, no markdown, no headers. It should sound natural when read aloud.
 
-Write in flowing, conversational paragraphs — no bullet points, no markdown, no headers.
-It should sound great when read aloud.
+2. "mindmap": A mindmap structure with:
+   - "center": The document's core topic (2-3 words max)
+   - "nodes": Exactly 5 branch topics, each an object with a "label" (2-4 words max)
 
-Document:
-${truncated}`;
-    } else {
-      prompt = `You are an expert at explaining complex documents in a clear, engaging way.
-
-Read this document and provide a concise audio-friendly summary. Structure it as:
-- A brief overview of what this document is about (1-2 sentences)
-- The 3-5 most important key points (each in 1-2 sentences)
-- A clear takeaway or conclusion
-
-Write in flowing, conversational paragraphs — no bullet points, no markdown, no headers.
-It should sound natural when read aloud. Keep it under 300 words.
+Return ONLY a valid JSON object — no markdown fences, no explanation:
+{
+  "summary": "...",
+  "mindmap": {
+    "center": "...",
+    "nodes": [
+      {"label": "..."},
+      {"label": "..."},
+      {"label": "..."},
+      {"label": "..."},
+      {"label": "..."}
+    ]
+  }
+}
 
 Document:
 ${truncated}`;
-    }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const result = await model.generateContent(prompt);
-    const summary = result.response.text();
+    const raw = result.response.text().trim().replace(/^```json\s*/i, '').replace(/\s*```$/, '');
+
+    let summary, mindmap;
+    try {
+      const parsed = JSON.parse(raw);
+      summary = parsed.summary || '';
+      mindmap = parsed.mindmap || null;
+    } catch {
+      summary = raw;
+      mindmap = null;
+    }
 
     res.json({
       summary,
+      mindmap,
       pageCount: data.numpages,
       wordCount: rawText.split(/\s+/).filter(Boolean).length,
       filename: req.file.originalname,
